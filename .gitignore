@@ -1,2 +1,4 @@
 __pycache__/
 *.pyc
+CDO_wind_visualizations_2023/*.html
+CDO_wind_visualizations_2023/CDO_wind_2023_hourly.csv

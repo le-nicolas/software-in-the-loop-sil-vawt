@@ -137,6 +137,14 @@ Generated files:
 - `viz5_energy_heatmap.html`
 - `viz_summary.txt`
 
+Repository tracking policy:
+
+- The root master dataset `CDO_wind_2023_hourly.csv` is tracked
+- Generated visualization HTML files are not tracked in git
+- The duplicated output-folder CSV is not tracked in git
+- `viz_summary.txt` may be kept as a lightweight generated report
+- Heavy artifacts should be rebuilt locally with `python build_visualizations.py`
+
 ## Environment
 
 Python dependencies:
