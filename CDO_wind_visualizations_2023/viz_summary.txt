@@ -1,0 +1,13 @@
+Weibull Parameters:
+Amihan: k=2.710227, c=4.720377
+Transition_DryDown: k=2.463727, c=4.184790
+Habagat: k=2.584526, c=3.788791
+Transition_Rampup: k=2.405930, c=3.197448
+
+Peak energy month: 12
+Peak energy hour_of_day: 15
+Dominant wind direction: NNE
+Total annual kWh estimate: 535.750292
+Hours above cut-in percentage: 78.047945%
+Warnings:
+CSV column order does not match the requested schema order.
