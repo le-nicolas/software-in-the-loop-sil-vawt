@@ -89,6 +89,11 @@ The repo also includes a direct refined spatial-grid fetch from Open-Meteo Histo
 
 This is a real per-point spatial source and gives direction variation across the grid. It is still reanalysis-scale data, not micrositing-grade measurement.
 
+Interpretation rule:
+
+- reanalysis-detected spatial patterns are treated as evidence or candidate events
+- they are not treated as proof until they are supported by local measurements or higher-fidelity modeling
+
 ## Current Accuracy Position
 
 Reasonable for:
@@ -141,11 +146,13 @@ Not sufficient for:
 - `viz6_quiver_field.py`
 - `viz7_dash_spatial.py`
 - `viz7_spatial_field_slider.py`
+- `viz8_wpd_spatial_slider.py`
 - `build_visualizations.py`
 
 Primary live app:
 
 - `viz7_spatial_field_slider.py`
+- `viz8_wpd_spatial_slider.py`
 
 ### Early SIL scaffold
 
@@ -229,6 +236,12 @@ Run the main Dash spatial app:
 
 ```bash
 python viz7_spatial_field_slider.py
+```
+
+Run the refined WPD spatial app:
+
+```bash
+python viz8_wpd_spatial_slider.py
 ```
 
 Run the first-pass SIL simulation:
