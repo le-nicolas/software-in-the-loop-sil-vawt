@@ -1,0 +1,26 @@
+grid_id,grid_row,grid_col,latitude,longitude,speed_multiplier,direction_offset_deg,source_type,source_note,ready_for_refined_build
+R0C0,0,0,8.282,124.447,0.88,0.0,placeholder_terrain_multiplier,Replace with manual Global Wind Atlas derived adjustment.,0
+R0C1,0,1,8.282,124.547,0.89,0.0,placeholder_terrain_multiplier,Replace with manual Global Wind Atlas derived adjustment.,0
+R0C2,0,2,8.282,124.647,0.87,0.0,placeholder_terrain_multiplier,Replace with manual Global Wind Atlas derived adjustment.,0
+R0C3,0,3,8.282,124.747,0.85,0.0,placeholder_terrain_multiplier,Replace with manual Global Wind Atlas derived adjustment.,0
+R0C4,0,4,8.282,124.847,0.84,0.0,placeholder_terrain_multiplier,Replace with manual Global Wind Atlas derived adjustment.,0
+R1C0,1,0,8.382,124.447,0.96,0.0,placeholder_terrain_multiplier,Replace with manual Global Wind Atlas derived adjustment.,0
+R1C1,1,1,8.382,124.547,0.97,0.0,placeholder_terrain_multiplier,Replace with manual Global Wind Atlas derived adjustment.,0
+R1C2,1,2,8.382,124.647,0.95,0.0,placeholder_terrain_multiplier,Replace with manual Global Wind Atlas derived adjustment.,0
+R1C3,1,3,8.382,124.747,0.93,0.0,placeholder_terrain_multiplier,Replace with manual Global Wind Atlas derived adjustment.,0
+R1C4,1,4,8.382,124.847,0.92,0.0,placeholder_terrain_multiplier,Replace with manual Global Wind Atlas derived adjustment.,0
+R2C0,2,0,8.482,124.447,1.0,0.0,placeholder_terrain_multiplier,Replace with manual Global Wind Atlas derived adjustment.,0
+R2C1,2,1,8.482,124.547,1.01,0.0,placeholder_terrain_multiplier,Replace with manual Global Wind Atlas derived adjustment.,0
+R2C2,2,2,8.482,124.647,1.0,0.0,placeholder_terrain_multiplier,Replace with manual Global Wind Atlas derived adjustment.,0
+R2C3,2,3,8.482,124.747,0.98,0.0,placeholder_terrain_multiplier,Replace with manual Global Wind Atlas derived adjustment.,0
+R2C4,2,4,8.482,124.847,0.97,0.0,placeholder_terrain_multiplier,Replace with manual Global Wind Atlas derived adjustment.,0
+R3C0,3,0,8.582,124.447,1.04,0.0,placeholder_terrain_multiplier,Replace with manual Global Wind Atlas derived adjustment.,0
+R3C1,3,1,8.582,124.547,1.06,0.0,placeholder_terrain_multiplier,Replace with manual Global Wind Atlas derived adjustment.,0
+R3C2,3,2,8.582,124.647,1.05,0.0,placeholder_terrain_multiplier,Replace with manual Global Wind Atlas derived adjustment.,0
+R3C3,3,3,8.582,124.747,1.03,0.0,placeholder_terrain_multiplier,Replace with manual Global Wind Atlas derived adjustment.,0
+R3C4,3,4,8.582,124.847,1.02,0.0,placeholder_terrain_multiplier,Replace with manual Global Wind Atlas derived adjustment.,0
+R4C0,4,0,8.682,124.447,1.08,0.0,placeholder_terrain_multiplier,Replace with manual Global Wind Atlas derived adjustment.,0
+R4C1,4,1,8.682,124.547,1.1,0.0,placeholder_terrain_multiplier,Replace with manual Global Wind Atlas derived adjustment.,0
+R4C2,4,2,8.682,124.647,1.12,0.0,placeholder_terrain_multiplier,Replace with manual Global Wind Atlas derived adjustment.,0
+R4C3,4,3,8.682,124.747,1.09,0.0,placeholder_terrain_multiplier,Replace with manual Global Wind Atlas derived adjustment.,0
+R4C4,4,4,8.682,124.847,1.07,0.0,placeholder_terrain_multiplier,Replace with manual Global Wind Atlas derived adjustment.,0

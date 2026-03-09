@@ -2,3 +2,12 @@ __pycache__/
 *.pyc
 CDO_wind_visualizations_2023/*.html
 CDO_wind_visualizations_2023/CDO_wind_2023_hourly.csv
+CDO_grid_wind_2023_long.csv
+CDO_grid_wind_2023_long_openmeteo.csv
+CDO_grid_wind_2023_long_refined.csv
+CDO_grid_wind_2023_wide.csv
+CDO_grid_wind_2023_wide_openmeteo.csv
+CDO_grid_wind_2023_wide_refined.csv
+CDO_wind_2023_gradients.csv
+CDO_sil_run_2023_hourly.csv
+CDO_sil_run_2023_summary.txt
