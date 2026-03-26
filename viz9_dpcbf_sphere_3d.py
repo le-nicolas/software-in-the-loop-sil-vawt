@@ -20,6 +20,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from sil_plant_model import cp_curve
 
 
 ROTOR_RADIUS_M = 0.75
@@ -89,14 +90,7 @@ def compute_wind_components(df: pd.DataFrame) -> dict[str, np.ndarray]:
         (omega_rad_s * ROTOR_RADIUS_M) / np.maximum(u_mean, 0.1),
         0.0,
     )
-    cp_effective = np.where(
-        u_mean >= CUT_IN_MS,
-        np.maximum(
-            0.0,
-            CP_GENERIC * (1.0 - ((tsr - TSR_OPT) / TSR_SPREAD) ** 2),
-        ),
-        0.0,
-    )
+    cp_effective = np.where(u_mean >= CUT_IN_MS, cp_curve(tsr), 0.0)
     v_rel = u_mean + u_prime - omega_cross_r
     v_rel_mag = np.abs(v_rel)
 

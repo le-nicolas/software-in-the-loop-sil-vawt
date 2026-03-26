@@ -23,6 +23,9 @@ class ControllerSensors:
     wind_speed_ms: float
     rotor_rpm: float
     air_density_kgm3: float
+    tip_speed_ratio: float = 0.0
+    cp_effective: float = 0.0
+    aerodynamic_torque_nm: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -42,32 +45,63 @@ class SimpleVAWTController:
 
     def __init__(self) -> None:
         self._max_rated_power_w = TURBINE_RATED_KW * 1000.0
+        self._tsr_error_integral = 0.0
+        self._last_torque_nm = 0.0
+
+    def reset(self) -> None:
+        self._tsr_error_integral = 0.0
+        self._last_torque_nm = 0.0
 
     def command(self, sensors: ControllerSensors) -> ControllerCommand:
         wind_speed = float(sensors.wind_speed_ms)
         rotor_rpm = float(sensors.rotor_rpm)
         air_density = float(sensors.air_density_kgm3)
         omega = rotor_rpm * 2.0 * np.pi / 60.0
+        tsr_measured = max(0.0, float(sensors.tip_speed_ratio))
+        cp_measured = max(0.0, float(sensors.cp_effective))
+        aero_torque_measured = max(0.0, float(sensors.aerodynamic_torque_nm))
 
         if wind_speed < CUT_IN_MS:
+            self.reset()
             return ControllerCommand(generator_torque_nm=0.0, brake_torque_nm=0.0, mode="idle")
 
         if wind_speed >= CUT_OUT_MS or rotor_rpm >= MAX_ROTOR_RPM:
+            self.reset()
             return ControllerCommand(generator_torque_nm=0.0, brake_torque_nm=BRAKE_TORQUE_NM, mode="brake")
 
-        # MPPT-style torque law: T = K * omega^2 with power cap at rated output.
-        k_mppt = 0.5 * air_density * SWEPT_AREA_M2 * CP_GENERIC * (ROTOR_RADIUS_M**3) / (TSR_OPT**3)
-        torque = k_mppt * (omega**2)
+        target_omega = TSR_OPT * wind_speed / max(ROTOR_RADIUS_M, 1e-6)
+        target_tsr = target_omega * ROTOR_RADIUS_M / max(wind_speed, 0.1)
+        tsr_error = tsr_measured - target_tsr
+        self._tsr_error_integral = float(np.clip(self._tsr_error_integral + tsr_error * 60.0, -200.0, 200.0))
+
+        # Use the actual plant Cp feedback and measured aerodynamic torque, not a fixed
+        # pre-tuned quadratic law. The controller unloads when TSR is below target and
+        # increases generator torque only when the rotor outruns the target regime.
+        cp_feedback = max(cp_measured, 0.12 * CP_GENERIC)
+        available_power_w = 0.5 * air_density * SWEPT_AREA_M2 * cp_feedback * (wind_speed**3)
+        reference_omega = max(target_omega, 0.35)
+        torque_from_cp = available_power_w / reference_omega
+
+        if aero_torque_measured > 0.0:
+            base_torque = 0.55 * torque_from_cp + 0.45 * aero_torque_measured
+        else:
+            base_torque = torque_from_cp
+
+        torque_feedback = 0.85 * tsr_error + 0.012 * self._tsr_error_integral
+        torque = max(0.0, base_torque + torque_feedback)
 
         if omega > 0.1:
             rated_torque = self._max_rated_power_w / max(omega * GENERATOR_EFFICIENCY, 1e-6)
             torque = min(torque, rated_torque)
 
         # Give startup some assist by keeping generator unloaded at very low speed.
-        if rotor_rpm < 20.0:
+        if rotor_rpm < 20.0 or (cp_measured < 0.03 and tsr_measured < 0.5):
             torque = 0.0
             mode = "startup"
         else:
-            mode = "mppt"
+            torque = 0.65 * self._last_torque_nm + 0.35 * torque
+            mode = "adaptive_mppt"
+
+        self._last_torque_nm = float(torque)
 
         return ControllerCommand(generator_torque_nm=float(torque), brake_torque_nm=0.0, mode=mode)

@@ -36,11 +36,27 @@ class PlantOutputs:
     electrical_power_kw: float
     tip_speed_ratio: float
     cp_effective: float
+    upwind_face_speed_ms: float
+    downwind_face_speed_ms: float
+    azimuthal_speed_std_ms: float
+    spatial_asymmetry_index: float
 
 
 def cp_curve(tsr: float) -> float:
-    deviation = (tsr - TSR_OPT) / TSR_SPREAD
-    return float(max(0.0, CP_GENERIC * (1.0 - deviation * deviation)))
+    tsr_array = np.asarray(tsr, dtype=float)
+    deviation = (tsr_array - TSR_OPT) / max(TSR_SPREAD, 1e-6)
+    response = np.empty_like(deviation, dtype=float)
+
+    low_side = deviation <= 0.0
+    response[low_side] = 1.0 - 0.55 * deviation[low_side] ** 2
+
+    high_deviation = deviation[~low_side]
+    response[~low_side] = 1.0 - 1.25 * high_deviation**2 - 0.35 * high_deviation**3
+
+    cp = CP_GENERIC * np.clip(response, 0.0, None)
+    if np.ndim(cp) == 0:
+        return float(cp)
+    return cp
 
 
 class SimpleVAWTPlant:
@@ -65,6 +81,11 @@ class SimpleVAWTPlant:
         air_density_kgm3: float,
         command: ControllerCommand,
         dt_seconds: float,
+        inflow_direction_deg: float | None = None,
+        ring_speed_ms: np.ndarray | None = None,
+        ring_direction_deg: np.ndarray | None = None,
+        ring_density_kgm3: np.ndarray | None = None,
+        ring_phi_rad: np.ndarray | None = None,
     ) -> PlantOutputs:
         omega = float(state.omega_rad_s)
         wind_speed = max(float(wind_speed_ms), 0.1)
@@ -73,10 +94,63 @@ class SimpleVAWTPlant:
         tsr = omega * ROTOR_RADIUS_M / wind_speed if wind_speed > 0.0 else 0.0
         cp = cp_curve(tsr)
 
+        upwind_face_speed_ms = wind_speed
+        downwind_face_speed_ms = wind_speed
+        azimuthal_speed_std_ms = 0.0
+        spatial_asymmetry_index = 0.0
+
+        if ring_speed_ms is not None and len(ring_speed_ms) > 0:
+            local_speed = np.clip(np.asarray(ring_speed_ms, dtype=float), 0.1, None)
+            local_phi = np.asarray(ring_phi_rad, dtype=float)
+            if ring_density_kgm3 is None:
+                local_density = np.full_like(local_speed, rho)
+            else:
+                local_density = np.asarray(ring_density_kgm3, dtype=float)
+            if ring_direction_deg is None:
+                local_theta = np.full_like(local_speed, np.deg2rad(float(inflow_direction_deg or 0.0)))
+            else:
+                local_theta = np.deg2rad(np.asarray(ring_direction_deg, dtype=float))
+
+            wind_hat_x = np.sin(local_theta)
+            wind_hat_y = np.cos(local_theta)
+            radial_x = np.cos(local_phi)
+            radial_y = np.sin(local_phi)
+            upwind_exposure = -(wind_hat_x * radial_x + wind_hat_y * radial_y)
+            upwind_mask = upwind_exposure >= 0.0
+            downwind_mask = ~upwind_mask
+
+            if np.any(upwind_mask):
+                upwind_face_speed_ms = float(np.mean(local_speed[upwind_mask]))
+            if np.any(downwind_mask):
+                downwind_face_speed_ms = float(np.mean(local_speed[downwind_mask]))
+
+            azimuthal_speed_std_ms = float(np.std(local_speed))
+            spatial_asymmetry_index = float(
+                (upwind_face_speed_ms - downwind_face_speed_ms) / max(float(np.mean(local_speed)), 0.1)
+            )
+
+            local_tsr = omega * ROTOR_RADIUS_M / np.maximum(local_speed, 0.1)
+            local_cp = np.asarray(cp_curve(local_tsr), dtype=float)
+            capture_weight = 0.55 + 0.45 * np.maximum(upwind_exposure, 0.0)
+            capture_weight = capture_weight / max(float(np.mean(capture_weight)), 1e-6)
+            sector_area = SWEPT_AREA_M2 / max(len(local_speed), 1)
+            aerodynamic_power_w = float(
+                np.sum(0.5 * local_density * sector_area * local_cp * (local_speed**3) * capture_weight)
+            )
+            startup_torque_nm = float(
+                0.5
+                * np.mean(local_density * (local_speed**2))
+                * SWEPT_AREA_M2
+                * STARTUP_TORQUE_COEFF
+                * ROTOR_RADIUS_M
+                * (1.0 + 0.4 * max(spatial_asymmetry_index, 0.0))
+            )
+        else:
+            aerodynamic_power_w = 0.5 * rho * SWEPT_AREA_M2 * cp * (wind_speed**3)
+            startup_torque_nm = 0.5 * rho * SWEPT_AREA_M2 * STARTUP_TORQUE_COEFF * (wind_speed**2) * ROTOR_RADIUS_M
+
         # Prevent singular startup torque when omega is near zero.
         omega_aero = max(omega, 0.3, 0.25 * TSR_OPT * wind_speed / max(ROTOR_RADIUS_M, 1e-6))
-        aerodynamic_power_w = 0.5 * rho * SWEPT_AREA_M2 * cp * (wind_speed**3)
-        startup_torque_nm = 0.5 * rho * SWEPT_AREA_M2 * STARTUP_TORQUE_COEFF * (wind_speed**2) * ROTOR_RADIUS_M
         aerodynamic_torque_nm = max(aerodynamic_power_w / omega_aero, startup_torque_nm)
 
         net_torque = (
@@ -102,4 +176,8 @@ class SimpleVAWTPlant:
             electrical_power_kw=float(electrical_power_kw),
             tip_speed_ratio=float(next_tsr),
             cp_effective=float(next_cp),
+            upwind_face_speed_ms=float(upwind_face_speed_ms),
+            downwind_face_speed_ms=float(downwind_face_speed_ms),
+            azimuthal_speed_std_ms=float(azimuthal_speed_std_ms),
+            spatial_asymmetry_index=float(spatial_asymmetry_index),
         )

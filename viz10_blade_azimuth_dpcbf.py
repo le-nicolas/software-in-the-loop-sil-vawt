@@ -132,6 +132,7 @@ def simulate_rotor_response(state: dict[str, np.ndarray]) -> dict[str, np.ndarra
     plant = SimpleVAWTPlant()
     plant_state = plant.initial_state()
     substep_dt = DT_DATA_S / PLANT_SUBSTEPS_PER_HOUR
+    previous_outputs = None
 
     omega = np.zeros_like(state["u_total"])
     rotor_rpm = np.zeros_like(state["u_total"])
@@ -139,6 +140,7 @@ def simulate_rotor_response(state: dict[str, np.ndarray]) -> dict[str, np.ndarra
     cp = np.zeros_like(state["u_total"])
     t_aero = np.zeros_like(state["u_total"])
     p_elec_kw = np.zeros_like(state["u_total"])
+    hourly_energy_kwh = np.zeros_like(state["u_total"])
     gen_torque = np.zeros_like(state["u_total"])
     brake_torque = np.zeros_like(state["u_total"])
 
@@ -147,12 +149,22 @@ def simulate_rotor_response(state: dict[str, np.ndarray]) -> dict[str, np.ndarra
         rho = float(state["rho"][idx])
         command = None
         outputs = None
+        cp_samples: list[float] = []
+        tsr_samples: list[float] = []
+        aero_torque_samples: list[float] = []
+        power_samples_kw: list[float] = []
+        gen_torque_samples: list[float] = []
+        brake_torque_samples: list[float] = []
+        energy_kwh = 0.0
 
         for _ in range(PLANT_SUBSTEPS_PER_HOUR):
             sensors = ControllerSensors(
                 wind_speed_ms=wind_speed,
                 rotor_rpm=float(plant_state.rotor_rpm),
                 air_density_kgm3=rho,
+                tip_speed_ratio=0.0 if previous_outputs is None else previous_outputs.tip_speed_ratio,
+                cp_effective=0.0 if previous_outputs is None else previous_outputs.cp_effective,
+                aerodynamic_torque_nm=0.0 if previous_outputs is None else previous_outputs.aerodynamic_torque_nm,
             )
             command = controller.command(sensors)
             outputs = plant.step(
@@ -163,15 +175,24 @@ def simulate_rotor_response(state: dict[str, np.ndarray]) -> dict[str, np.ndarra
                 dt_seconds=substep_dt,
             )
             plant_state = outputs.state
+            previous_outputs = outputs
+            cp_samples.append(outputs.cp_effective)
+            tsr_samples.append(outputs.tip_speed_ratio)
+            aero_torque_samples.append(outputs.aerodynamic_torque_nm)
+            power_samples_kw.append(outputs.electrical_power_kw)
+            gen_torque_samples.append(command.generator_torque_nm)
+            brake_torque_samples.append(command.brake_torque_nm)
+            energy_kwh += outputs.electrical_power_kw * (substep_dt / 3600.0)
 
         omega[idx] = outputs.state.omega_rad_s
         rotor_rpm[idx] = outputs.state.rotor_rpm
-        tsr[idx] = outputs.tip_speed_ratio
-        cp[idx] = outputs.cp_effective
-        t_aero[idx] = outputs.aerodynamic_torque_nm
-        p_elec_kw[idx] = outputs.electrical_power_kw
-        gen_torque[idx] = command.generator_torque_nm
-        brake_torque[idx] = command.brake_torque_nm
+        tsr[idx] = float(np.mean(tsr_samples))
+        cp[idx] = float(np.mean(cp_samples))
+        t_aero[idx] = float(np.mean(aero_torque_samples))
+        p_elec_kw[idx] = float(np.mean(power_samples_kw))
+        hourly_energy_kwh[idx] = energy_kwh
+        gen_torque[idx] = float(np.mean(gen_torque_samples))
+        brake_torque[idx] = float(np.mean(brake_torque_samples))
 
     domega_dt = np.zeros_like(omega)
     domega_dt[1:] = np.diff(omega) / DT_DATA_S
@@ -184,6 +205,7 @@ def simulate_rotor_response(state: dict[str, np.ndarray]) -> dict[str, np.ndarra
         "cp": cp,
         "t_aero": t_aero,
         "p_elec_kw": p_elec_kw,
+        "hourly_energy_kwh": hourly_energy_kwh,
         "gen_torque": gen_torque,
         "brake_torque": brake_torque,
         "domega_dt": domega_dt,
@@ -417,7 +439,7 @@ def print_summary(
     azimuth: dict[str, np.ndarray],
     particles: dict[str, np.ndarray],
 ) -> None:
-    annual_energy_mwh = float(np.sum(rotor["p_elec_kw"]) / 1000.0)
+    annual_energy_mwh = float(np.sum(rotor["hourly_energy_kwh"]) / 1000.0)
     mean_ring_vrel = float(np.mean(azimuth["v_rel_mag"]))
     monthly_alert = particles["mean_h"] < 0.0
     annual_capture_proxy = float(np.mean(np.maximum(rotor["cp"], 0.0)))
@@ -478,6 +500,7 @@ def export_sphere_metrics(
             "generator_torque_nm": rotor["gen_torque"],
             "brake_torque_nm": rotor["brake_torque"],
             "electrical_power_kw": rotor["p_elec_kw"],
+            "hourly_energy_kwh": rotor["hourly_energy_kwh"],
             "particle_capture_fraction": particles["capture_fraction"],
             "particle_mean_h": particles["mean_h"],
             "particle_mean_radius_m": particles["mean_radius"],

@@ -49,14 +49,19 @@ class CorrelatedTurbulenceGenerator:
         self,
         layout: GridLayout | None = None,
         spatial_corr_length: float = 5.0,
+        direction_spatial_corr_length: float = 7.5,
         temporal_persistence: float = 0.85,
+        direction_temporal_persistence: float = 0.92,
         seed: int = 2026,
     ) -> None:
         self.layout = layout or default_grid_layout()
         self.spatial_corr_length = spatial_corr_length
+        self.direction_spatial_corr_length = direction_spatial_corr_length
         self.temporal_persistence = temporal_persistence
+        self.direction_temporal_persistence = direction_temporal_persistence
         self.rng = np.random.default_rng(seed)
         self.covariance = exponential_covariance(self.layout.coordinates, self.spatial_corr_length)
+        self.direction_covariance = exponential_covariance(self.layout.coordinates, self.direction_spatial_corr_length)
         self._speed_state = np.zeros(len(self.layout.x), dtype=float)
         self._direction_state = np.zeros(len(self.layout.x), dtype=float)
 
@@ -78,10 +83,13 @@ class CorrelatedTurbulenceGenerator:
             ti = np.full_like(mean_speed, float(ti))
 
         spatial_speed_noise = sample_correlated_standard_normals(self.rng, self.covariance)
-        spatial_dir_noise = sample_correlated_standard_normals(self.rng, self.covariance)
+        spatial_dir_noise = sample_correlated_standard_normals(self.rng, self.direction_covariance)
 
         self._speed_state = self.temporal_persistence * self._speed_state + np.sqrt(1.0 - self.temporal_persistence**2) * spatial_speed_noise
-        self._direction_state = self.temporal_persistence * self._direction_state + np.sqrt(1.0 - self.temporal_persistence**2) * spatial_dir_noise
+        self._direction_state = (
+            self.direction_temporal_persistence * self._direction_state
+            + np.sqrt(1.0 - self.direction_temporal_persistence**2) * spatial_dir_noise
+        )
 
         speed = np.clip(mean_speed * (1.0 + ti * self._speed_state), 0.1, None)
         direction = np.mod(mean_direction_deg + direction_sigma_deg * ti * self._direction_state, 360.0)

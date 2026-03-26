@@ -4,19 +4,19 @@
 ![Stage](https://img.shields.io/badge/stage-viz10_%2B_MATLAB_foundation-1d4ed8)
 ![Location](https://img.shields.io/badge/site-Cagayan_de_Oro,_PH-475569)
 
-Transparent wind-resource analysis, spatial wind-field modeling, visualization, DPCBF-inspired capture diagnostics, MATLAB design-foundation benchmarking, and early software-in-the-loop work for a vertical-axis wind turbine feasibility study in Cagayan de Oro, Philippines.
+Transparent wind-resource analysis, spatial wind-field modeling, visualization, DPCBF-inspired capture diagnostics, MATLAB design-foundation benchmarking, and adaptive software-in-the-loop work for a vertical-axis wind turbine feasibility study in Cagayan de Oro, Philippines.
 
 ## Research Status
 
 This repository is under active research and remains a working engineering notebook as well as a codebase.
 
-- stable foundation: hourly 2023 CDO wind dataset, derived height columns, spatial analysis utilities, reproducible plots, `viz9` and `viz10` DPCBF diagnostics, exported sphere metrics, Fusion360 load benchmarks, a MATLAB design-foundation workflow, and an early SIL loop
+- stable foundation: hourly 2023 CDO wind dataset, derived height columns, spatial analysis utilities, reproducible plots, `viz9` and `viz10` DPCBF diagnostics, exported sphere metrics, Fusion360 load benchmarks, a MATLAB design-foundation workflow, and an adaptive SIL loop with Cp feedback and corrected power accounting
 - still in-progress: controller fidelity, plant physics, terrain correction quality, validation depth, and the Unity scene integration layer
 - not yet claimed: bankable resource assessment, final micrositing accuracy, or full digital-twin realism
 
 If you are viewing this from GitHub, the intended repo description is:
 
-`Active research: transparent wind-resource, DPCBF capture diagnostics, MATLAB design-foundation numbers, and early SIL modeling for a CDO VAWT study`
+`Active research: transparent wind-resource, DPCBF capture diagnostics, MATLAB design-foundation numbers, and adaptive SIL modeling for a CDO VAWT study`
 
 ## What This Repo Contains
 
@@ -38,7 +38,7 @@ This project is intentionally transparent about what each dataset or model can a
 - NASA POWER is the base hourly series for the master dataset
 - Open-Meteo ERA5-Seamless is used for refined spatial-pattern exploration
 - some files are evidence-building validation inputs, not final truth sources
-- current SIL controller and plant dynamics are placeholders for research iteration
+- current SIL controller and plant dynamics are still research models, but they now include adaptive Cp feedback, an asymmetric Cp curve, ring-resolved inflow preservation, and explicit hourly energy accounting
 - the Unity folder is a scaffold, not yet a fully generated Unity project with scenes and materials committed
 - rebuildable outputs are separated from the master dataset so the core source stays clean
 
@@ -135,6 +135,7 @@ Not sufficient for:
 - exported sphere and particle CSVs now make the capture logic inspectable outside the HTML viewers
 - `build_fusion360_design_benchmark.py` and `design_benchmarks/` turn the simulation outputs into first-pass CAD load cases
 - `matlab_design_foundation_benchmark.m` converts the benchmark stack into MATLAB-native tables, figures, workspace data, and toolbox-aware follow-on artifacts
+- `sil_controller.py`, `sil_plant_model.py`, and `run_sil_simulation.py` now preserve Cp feedback, use an asymmetric Cp curve, keep ring-resolved inflow structure, and separate hourly energy from mean power
 - `UnityVAWT/` adds a 12-script Unity scaffold using `StreamingAssets` runtime CSV loading and URP-oriented scene structure
 - the Unity scaffold is designed to reproduce the engineering meaning of `viz9`, not just its appearance
 
@@ -204,12 +205,12 @@ Primary interactive apps:
 - operating hours in 2023: `6739`
 - operating wind `P50`: `3.957 m/s`
 - operating wind `P90`: `6.038 m/s`
-- rotor speed `P50`: `75.68 rpm`
+- rotor speed `P50`: `98.17 rpm`
 - rotor speed `P90`: `220 rpm`
 - aero torque `P90`: `7.301 N*m`
-- aero torque `P95`: `9.624 N*m`
-- capture fraction `P50`: `0.900`
-- dominant peak sector: `210 deg`
+- aero torque `P95`: `9.697 N*m`
+- capture fraction `P50`: `1.000`
+- dominant peak sector: `205 deg`
 
 ### Unity conversion scaffold
 
@@ -224,18 +225,18 @@ Primary interactive apps:
 
 ### Early SIL scaffold
 
-- `sil_controller.py`: startup logic, MPPT-style torque command, and overspeed braking scaffold
-- `sil_plant_model.py`: simple VAWT plant model with inertia, aero torque, damping, and electrical output
-- `run_sil_simulation.py`: year-scale closed-loop simulation using blended spatial forcing
+- `sil_controller.py`: adaptive TSR-tracking torque control using plant Cp and aerodynamic-torque feedback
+- `sil_plant_model.py`: VAWT plant model with asymmetric Cp, startup torque support, damping, and optional ring-resolved inflow asymmetry
+- `run_sil_simulation.py`: year-scale closed-loop simulation using blended spatial forcing with preserved ring-level inflow structure and explicit hourly energy accounting
 
 ## Current SIL Loop
 
 1. Spatial wind forcing is assembled from center-series magnitude, refined spatial ratios and direction deltas, plus turbulence.
-2. The wind field is disk-averaged to an effective inflow.
-3. The controller reads simulated wind and rotor speed.
-4. The controller issues torque and brake commands.
-5. The plant advances rotor state and electrical output.
-6. Hourly outputs are logged for analysis.
+2. The disturbed 25-point field is reconstructed into a ring-resolved rotor inflow instead of collapsing direction immediately to one scalar.
+3. The controller reads simulated wind, rotor speed, previous Cp, previous TSR, and previous aerodynamic torque.
+4. The controller issues adaptive generator torque and brake commands.
+5. The plant advances rotor state using an asymmetric Cp curve and optional azimuthal inflow asymmetry.
+6. Hourly outputs log both mean power and hourly energy, along with upwind/downwind face statistics.
 
 ## Project Rules
 

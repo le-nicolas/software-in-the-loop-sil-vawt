@@ -37,6 +37,7 @@ def main() -> None:
     assert (viz10_hourly["particle_capture_fraction"].between(0.0, 1.0)).all()
     assert np.isfinite(viz10_hourly["particle_mean_h"]).all()
     assert np.isfinite(viz10_hourly["domega_dt"]).all()
+    assert (viz10_hourly["hourly_energy_kwh"] >= 0.0).all()
     assert (viz10_azimuth.groupby("hour_of_year").size() == 72).all()
     assert (viz10_particle.groupby("hour_of_year").size() == 90).all()
     assert (viz10_azimuth["v_rel_mag_ms"] >= 0.0).all()
@@ -66,7 +67,11 @@ def main() -> None:
 
     print("SPHERE + BENCHMARK VALIDATION PASSED")
     print(f"viz9 alerts={int(viz9['capture_alert'].sum())}, density_mean={viz9['particle_density'].mean():.4f}")
-    print(f"viz10 capture_fraction_mean={viz10_hourly['particle_capture_fraction'].mean():.4f}, mean_h_mean={viz10_hourly['particle_mean_h'].mean():.4f}")
+    print(
+        f"viz10 capture_fraction_mean={viz10_hourly['particle_capture_fraction'].mean():.4f}, "
+        f"mean_h_mean={viz10_hourly['particle_mean_h'].mean():.4f}, "
+        f"annual_energy_kwh={viz10_hourly['hourly_energy_kwh'].sum():.3f}"
+    )
     print(f"Fusion360 nominal rpm={param_map['rotor_rpm_p50']:.2f}, design torque={param_map['recommended_design_torque_nm']:.3f} N*m")
 
 
