@@ -1,22 +1,22 @@
 # Software-in-the-Loop VAWT
 
 ![Status](https://img.shields.io/badge/status-active_research-0f766e)
-![Stage](https://img.shields.io/badge/stage-viz9_%2B_Unity_scaffold-1d4ed8)
+![Stage](https://img.shields.io/badge/stage-viz10_%2B_MATLAB_foundation-1d4ed8)
 ![Location](https://img.shields.io/badge/site-Cagayan_de_Oro,_PH-475569)
 
-Transparent wind-resource analysis, spatial wind-field modeling, visualization, DPCBF-inspired capture diagnostics, and early software-in-the-loop work for a vertical-axis wind turbine feasibility study in Cagayan de Oro, Philippines.
+Transparent wind-resource analysis, spatial wind-field modeling, visualization, DPCBF-inspired capture diagnostics, MATLAB design-foundation benchmarking, and early software-in-the-loop work for a vertical-axis wind turbine feasibility study in Cagayan de Oro, Philippines.
 
 ## Research Status
 
 This repository is under active research and remains a working engineering notebook as well as a codebase.
 
-- stable foundation: hourly 2023 CDO wind dataset, derived height columns, spatial analysis utilities, reproducible plots, `viz9` capture-sphere diagnostics, and an early SIL loop
+- stable foundation: hourly 2023 CDO wind dataset, derived height columns, spatial analysis utilities, reproducible plots, `viz9` and `viz10` DPCBF diagnostics, exported sphere metrics, Fusion360 load benchmarks, a MATLAB design-foundation workflow, and an early SIL loop
 - still in-progress: controller fidelity, plant physics, terrain correction quality, validation depth, and the Unity scene integration layer
 - not yet claimed: bankable resource assessment, final micrositing accuracy, or full digital-twin realism
 
 If you are viewing this from GitHub, the intended repo description is:
 
-`Active research: transparent wind-resource, spatial-field, and early SIL modeling for a CDO VAWT study`
+`Active research: transparent wind-resource, DPCBF capture diagnostics, MATLAB design-foundation numbers, and early SIL modeling for a CDO VAWT study`
 
 ## What This Repo Contains
 
@@ -24,7 +24,9 @@ If you are viewing this from GitHub, the intended repo description is:
 - height-derived wind columns and atmospheric metrics
 - spatial wind-field builders using hybrid and refined workflows
 - interactive Plotly and Dash visualizations
-- a DPCBF-inspired 3D capture-sphere viewer for Savonius vs Darrieus regime insight
+- DPCBF-inspired 3D and blade-azimuth capture viewers for Savonius vs Darrieus regime insight
+- exported sphere, azimuth, particle, and Fusion360-oriented design benchmark tables
+- a MATLAB benchmark script with toolbox-aware design-foundation outputs for CAD and Simulink follow-on work
 - early software-in-the-loop controller and plant scaffolding
 - a Unity-ready runtime scaffold for native 3D exploration
 - validation-source fetches and supporting raw reference files
@@ -129,7 +131,10 @@ Not sufficient for:
 ## New In This Repo State
 
 - `viz9_dpcbf_sphere_3d.py` adds a 3D wind-particle capture sphere with CBF-inspired alert logic
-- the new viewer compares inner Savonius drag behavior against outer Darrieus lift behavior
+- `viz10_blade_azimuth_dpcbf.py` extends the model to explicit blade-azimuth relative velocity and particle-side DPCBF logging
+- exported sphere and particle CSVs now make the capture logic inspectable outside the HTML viewers
+- `build_fusion360_design_benchmark.py` and `design_benchmarks/` turn the simulation outputs into first-pass CAD load cases
+- `matlab_design_foundation_benchmark.m` converts the benchmark stack into MATLAB-native tables, figures, workspace data, and toolbox-aware follow-on artifacts
 - `UnityVAWT/` adds a 12-script Unity scaffold using `StreamingAssets` runtime CSV loading and URP-oriented scene structure
 - the Unity scaffold is designed to reproduce the engineering meaning of `viz9`, not just its appearance
 
@@ -164,12 +169,47 @@ Not sufficient for:
 - `viz7_spatial_field_slider.py`
 - `viz8_wpd_spatial_slider.py`
 - `viz9_dpcbf_sphere_3d.py`
+- `viz10_blade_azimuth_dpcbf.py`
+- `build_fusion360_design_benchmark.py`
+- `validate_sphere_benchmark_outputs.py`
 
 Primary interactive apps:
 
 - `viz7_spatial_field_slider.py`
 - `viz8_wpd_spatial_slider.py`
 - `viz9_dpcbf_sphere_3d.py`
+- `viz10_blade_azimuth_dpcbf.py`
+
+### Design benchmark outputs
+
+- `design_benchmarks/fusion360_design_parameters.csv`: CAD-facing baseline geometry, rpm, torque, and sector numbers
+- `design_benchmarks/fusion360_load_cases.csv`: named operating and structural load cases for design studies
+- `design_benchmarks/fusion360_design_summary.txt`: compact text interpretation of the benchmark outputs
+
+### MATLAB foundation workflow
+
+- `matlab_design_foundation_benchmark.m`: MATLAB-native benchmark builder using repo CSV outputs plus optional toolboxes when available
+- `matlab_design_outputs/matlab_foundation_parameters.csv`: MATLAB-exported foundation numbers for design work
+- `matlab_design_outputs/matlab_foundation_load_cases.csv`: MATLAB-exported load cases
+- `matlab_design_outputs/matlab_seasonal_summary.csv`: seasonal operating summary
+- `matlab_design_outputs/matlab_foundation_summary.txt`: plain-text design summary
+- `matlab_design_outputs/matlab_foundation_dashboard.png`: MATLAB dashboard image
+- `matlab_design_outputs/matlab_foundation_workspace.mat`: saved MATLAB workspace for follow-on analysis
+
+### Current MATLAB foundation numbers
+
+- rotor radius: `0.750 m`
+- rotor diameter: `1.500 m`
+- swept-area-equivalent rotor height: `2.667 m`
+- operating hours in 2023: `6739`
+- operating wind `P50`: `3.957 m/s`
+- operating wind `P90`: `6.038 m/s`
+- rotor speed `P50`: `75.68 rpm`
+- rotor speed `P90`: `220 rpm`
+- aero torque `P90`: `7.301 N*m`
+- aero torque `P95`: `9.624 N*m`
+- capture fraction `P50`: `0.900`
+- dominant peak sector: `210 deg`
 
 ### Unity conversion scaffold
 
@@ -228,6 +268,20 @@ Run the DPCBF-inspired capture-sphere viewer:
 python viz9_dpcbf_sphere_3d.py
 ```
 
+Run the explicit blade-azimuth DPCBF viewer and benchmark exports:
+
+```bash
+python viz10_blade_azimuth_dpcbf.py
+python build_fusion360_design_benchmark.py
+python validate_sphere_benchmark_outputs.py
+```
+
+Run the MATLAB design-foundation workflow:
+
+```matlab
+matlab_design_foundation_benchmark
+```
+
 For Unity work:
 
 ```bash
@@ -242,6 +296,7 @@ Tracked:
 - constants
 - master dataset
 - lightweight templates
+- exported benchmark CSV and summary artifacts used for downstream design work
 - Unity conversion scaffold source
 - raw validation-reference inputs used for transparency and reproducibility
 
@@ -258,5 +313,7 @@ Ignored:
 - add sensor models and fault scenarios
 - tighten validation against local or nearby measurements
 - improve terrain, roughness, and coastline corrections
+- replace heuristic DPCBF particle terms with a paper-matched calibrated form once the preferred reference formulation is locked
 - turn the Unity scaffold into a fully wired Unity project scene with materials, prefabs, and UI assets
 - mature the workflow from early SIL scaffold toward a stronger research test harness
+- carry the MATLAB foundation numbers into Simulink, Simscape, and Fusion360 iterations

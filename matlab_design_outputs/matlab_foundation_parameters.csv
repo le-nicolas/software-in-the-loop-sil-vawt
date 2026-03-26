@@ -1,0 +1,33 @@
+parameter,value,units,basis
+rotor_radius_m,0.75,m,Imported from Python Fusion360 benchmark
+rotor_diameter_m,1.5,m,Imported from Python Fusion360 benchmark
+rotor_height_m,2.66666666666667,m,Swept-area equivalent height
+operating_hours_2023,6739,hours,MATLAB recomputed from viz10 hourly export
+wind_operating_p50_ms,3.95719885860483,m/s,MATLAB percentile
+wind_operating_p75_ms,4.89619076655462,m/s,MATLAB percentile
+wind_operating_p90_ms,6.03762412914212,m/s,MATLAB percentile
+rotor_rpm_p50,75.6804636913257,rpm,MATLAB percentile
+rotor_rpm_p75,151.314822822527,rpm,MATLAB percentile
+rotor_rpm_p90,220,rpm,MATLAB percentile
+omega_rad_s_p50,7.92523962509793,rad/s,MATLAB percentile
+omega_rad_s_p90,23.0383461263252,rad/s,MATLAB percentile
+aero_torque_nm_p50,3.14277679677988,N*m,MATLAB percentile
+aero_torque_nm_p90,7.30062097805767,N*m,Design structural load case
+aero_torque_nm_p95,9.6241536264381,N*m,Peak structural load case
+cp_operating_p50,0.136532084094418,-,MATLAB percentile
+cp_operating_p90,0.333180868333792,-,MATLAB percentile
+capture_fraction_p10,0.422222222222222,-,Lower-tail capture robustness
+capture_fraction_p50,0.9,-,Median capture robustness
+capture_fraction_p90,1,-,Upper-tail capture robustness
+mean_h_p10,0.422410158684651,-,Lower-tail DPCBF mean h
+mean_h_p50,6.46904258820214,-,Median DPCBF mean h
+mean_h_p90,20.3427506617485,-,Upper-tail DPCBF mean h
+dominant_peak_sector_deg,210,deg,Imported annual azimuth benchmark
+design_tip_speed_p90_ms,17.2787595947439,m/s,MATLAB percentile
+design_tip_speed_p95_ms,17.2787595947439,m/s,MATLAB percentile
+recommended_nominal_rpm,75.6804636913257,rpm,Imported Fusion360 baseline
+recommended_design_torque_nm,7.30002409147505,N*m,Imported Fusion360 baseline
+recommended_peak_torque_nm,9.61951208970959,N*m,Imported Fusion360 baseline
+mean_air_density_kgm3,1.11377942292118,kg/m^3,Raw 2023 dataset mean
+mean_wind_15m_ms,3.6433443584375,m/s,Raw 2023 dataset mean
+peak_hourly_wind_15m_ms,15.2899515428697,m/s,Raw 2023 dataset max
