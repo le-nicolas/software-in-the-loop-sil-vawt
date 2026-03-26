@@ -1,0 +1,38 @@
+parameter,value,units,basis
+rotor_radius_m,0.75,m,Repo design constant
+rotor_diameter_m,1.5,m,2 * rotor_radius_m
+rotor_height_m,2.6666666666666665,m,SWEPT_AREA_M2 / diameter
+swept_area_m2,4.0,m2,Repo design constant
+cut_in_ms,2.5,m/s,Repo controller/plant threshold
+operating_hours_2023,6739.0,hours,u_total >= cut-in
+wind_operating_p50_ms,3.9571988586048303,m/s,Operating-hour percentile
+wind_operating_p75_ms,4.89591343778746,m/s,Operating-hour percentile
+wind_operating_p90_ms,6.037087315932434,m/s,Operating-hour percentile
+wind_operating_p95_ms,6.809352589504574,m/s,Operating-hour percentile
+rotor_rpm_p50,75.68046369132566,rpm,Operating-hour percentile
+rotor_rpm_p90,220.0,rpm,Operating-hour percentile
+rotor_rpm_p95,220.0,rpm,Operating-hour percentile
+omega_rad_s_p50,7.925239625097926,rad/s,Operating-hour percentile
+omega_rad_s_p90,23.038346126325152,rad/s,Operating-hour percentile
+aero_torque_nm_p50,3.14277679677988,N*m,Operating-hour percentile
+aero_torque_nm_p90,7.300024091475055,N*m,Design-load proxy
+aero_torque_nm_p95,9.619512089709593,N*m,Peak-load proxy
+cp_operating_p50,0.13653208409441767,-,Operating-hour percentile
+cp_operating_p90,0.33316315926678913,-,Operating-hour percentile
+vrel_ring_mean_p50_ms,7.012552982386336,m/s,Mean azimuthal relative speed
+vrel_ring_mean_p90_ms,17.689548371012584,m/s,Mean azimuthal relative speed
+vrel_ring_peak_p95_ms,23.584853424431955,m/s,Peak azimuthal relative speed
+capture_fraction_p10,0.0,-,Lower-tail monthly capture proxy
+capture_fraction_p50,0.4444444444444444,-,Median monthly capture proxy
+capture_fraction_p90,1.0,-,Upper-tail monthly capture proxy
+mean_h_p10,-6.213600237736217,-,Lower-tail DPCBF mean h
+mean_h_p50,-0.4682820570447387,-,Median DPCBF mean h
+mean_h_p90,4.21044494509453,-,Upper-tail DPCBF mean h
+dominant_peak_sector_deg,210.0,deg,Annual max-mean azimuth sector
+recommended_nominal_tsr,2.2,-,Use as Fusion360 motion baseline
+recommended_nominal_rpm,75.68046369132566,rpm,Nominal CAD animation / design case
+recommended_upper_rpm,220.0,rpm,Upper operating CAD animation case
+recommended_design_torque_nm,7.300024091475055,N*m,Design structural load case
+recommended_peak_torque_nm,9.619512089709593,N*m,Peak structural load case
+recommended_nominal_tip_speed_ms,5.943929718823444,m/s,Blade-tip speed baseline
+recommended_upper_tip_speed_ms,17.278759594743864,m/s,Blade-tip speed upper case

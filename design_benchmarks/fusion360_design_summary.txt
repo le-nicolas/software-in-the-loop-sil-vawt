@@ -1,0 +1,15 @@
+=== Fusion360 Design Foundation Benchmark ===
+Rotor radius: 0.750 m
+Rotor diameter: 1.500 m
+Rotor height from swept area: 2.667 m
+Operating hours in 2023: 6739
+Nominal operating wind: 3.957 m/s
+Design operating wind (P90): 6.037 m/s
+Nominal rotor speed: 75.68 rpm
+Upper rotor speed (P90): 220.00 rpm
+Design aero torque (P90): 7.300 N*m
+Peak aero torque (P95): 9.620 N*m
+Peak azimuth sector: 210.0 deg
+Lower-tail capture fraction (P10): 0.000
+Median capture fraction: 0.444
+Use the load-case table for Fusion360 motion studies, interference envelopes, and first-pass structural load conditions.

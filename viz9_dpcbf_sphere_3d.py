@@ -299,6 +299,38 @@ def print_summary(
     print("(assuming SWEPT_AREA_M2=4.0, CP_GENERIC=0.35, continuous operation)")
 
 
+def export_sphere_metrics(
+    output_dir: Path,
+    components: dict[str, np.ndarray],
+    particle_state: dict[str, np.ndarray],
+    capture: dict[str, np.ndarray],
+) -> Path:
+    export_path = output_dir / "viz9_sphere_hourly_metrics.csv"
+    df = pd.DataFrame(
+        {
+            "hour_of_year": components["hours"],
+            "season": components["seasons"],
+            "u_mean_ms": components["u_mean"],
+            "u_prime_ms": components["u_prime"],
+            "omega_rad_s": components["omega_rad_s"],
+            "omega_cross_r_ms": components["omega_cross_r"],
+            "tsr": components["tsr"],
+            "cp_effective": components["cp_effective"],
+            "v_rel_ms": components["v_rel"],
+            "v_rel_mag_ms": components["v_rel_mag"],
+            "particle_density": particle_state["particle_density"],
+            "n_inner": particle_state["n_inner"],
+            "n_outer": particle_state["n_outer"],
+            "h_capture": capture["h"],
+            "dh_dt": capture["dh_dt"],
+            "capture_alert": capture["alert"].astype(int),
+        }
+    )
+    df.to_csv(export_path, index=False)
+    print(f"Saved sphere metrics: {export_path.name} ({len(df)} rows)")
+    return export_path
+
+
 def make_dynamic_annotations(
     frame_idx: int,
     month_hours: np.ndarray,
@@ -849,6 +881,7 @@ def main() -> None:
     direction_stats = direction_statistics(components)
 
     print_summary(components, capture, direction_stats)
+    export_sphere_metrics(output_dir, components, particle_state, capture)
 
     fig = build_figure(components, particle_state, capture, direction_stats)
     fig.write_html(output_path, include_plotlyjs="cdn")

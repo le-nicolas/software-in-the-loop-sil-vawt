@@ -42,6 +42,7 @@ from sil_plant_model import SimpleVAWTPlant
 MONTH_FRAMES = 720
 DT_DATA_S = 3600.0
 DT_VIZ_S = 0.5
+PLANT_SUBSTEPS_PER_HOUR = 60
 AR1_PERSISTENCE = 0.85
 TURBULENCE_INTENSITY = 0.10
 N_PARTICLES = 90
@@ -122,6 +123,7 @@ def simulate_rotor_response(state: dict[str, np.ndarray]) -> dict[str, np.ndarra
     controller = SimpleVAWTController()
     plant = SimpleVAWTPlant()
     plant_state = plant.initial_state()
+    substep_dt = DT_DATA_S / PLANT_SUBSTEPS_PER_HOUR
 
     omega = np.zeros_like(state["u_total"])
     rotor_rpm = np.zeros_like(state["u_total"])
@@ -133,20 +135,26 @@ def simulate_rotor_response(state: dict[str, np.ndarray]) -> dict[str, np.ndarra
     brake_torque = np.zeros_like(state["u_total"])
 
     for idx in range(len(state["u_total"])):
-        sensors = ControllerSensors(
-            wind_speed_ms=float(state["u_total"][idx]),
-            rotor_rpm=float(plant_state.rotor_rpm),
-            air_density_kgm3=float(state["rho"][idx]),
-        )
-        command = controller.command(sensors)
-        outputs = plant.step(
-            state=plant_state,
-            wind_speed_ms=float(state["u_total"][idx]),
-            air_density_kgm3=float(state["rho"][idx]),
-            command=command,
-            dt_seconds=DT_DATA_S,
-        )
-        plant_state = outputs.state
+        wind_speed = float(state["u_total"][idx])
+        rho = float(state["rho"][idx])
+        command = None
+        outputs = None
+
+        for _ in range(PLANT_SUBSTEPS_PER_HOUR):
+            sensors = ControllerSensors(
+                wind_speed_ms=wind_speed,
+                rotor_rpm=float(plant_state.rotor_rpm),
+                air_density_kgm3=rho,
+            )
+            command = controller.command(sensors)
+            outputs = plant.step(
+                state=plant_state,
+                wind_speed_ms=wind_speed,
+                air_density_kgm3=rho,
+                command=command,
+                dt_seconds=substep_dt,
+            )
+            plant_state = outputs.state
 
         omega[idx] = outputs.state.omega_rad_s
         rotor_rpm[idx] = outputs.state.rotor_rpm
@@ -228,19 +236,20 @@ def simulate_particles(
     state: dict[str, np.ndarray],
     azimuth: dict[str, np.ndarray],
 ) -> dict[str, np.ndarray]:
-    frame_count = min(MONTH_FRAMES, len(state["hours"]))
+    n_steps = len(state["hours"])
+    frame_count = min(MONTH_FRAMES, n_steps)
     rng = np.random.default_rng(RNG_SEED + 99)
 
     positions = np.zeros((frame_count, N_PARTICLES, 3), dtype=float)
-    h_particle = np.zeros((frame_count, N_PARTICLES), dtype=float)
-    v_rel_particle = np.zeros((frame_count, N_PARTICLES), dtype=float)
-    capture_fraction = np.zeros(frame_count, dtype=float)
-    mean_h = np.zeros(frame_count, dtype=float)
-    mean_radius = np.zeros(frame_count, dtype=float)
+    h_particle = np.zeros((n_steps, N_PARTICLES), dtype=float)
+    v_rel_particle = np.zeros((n_steps, N_PARTICLES), dtype=float)
+    capture_fraction = np.zeros(n_steps, dtype=float)
+    mean_h = np.zeros(n_steps, dtype=float)
+    mean_radius = np.zeros(n_steps, dtype=float)
 
     particles = np.stack([upstream_spawn(state["theta_rad"][0], rng) for _ in range(N_PARTICLES)], axis=0)
 
-    for idx in range(frame_count):
+    for idx in range(n_steps):
         if idx > 0:
             vx = state["u_mean"][idx] * np.sin(state["theta_rad"][idx])
             vy = state["u_mean"][idx] * np.cos(state["theta_rad"][idx])
@@ -263,7 +272,8 @@ def simulate_particles(
         lambda_d, mu_d = lambda_mu_from_distance(distance_norm)
         h_now = vrel_x_particle + lambda_d * (vrel_y_particle**2) + mu_d
 
-        positions[idx] = particles
+        if idx < frame_count:
+            positions[idx] = particles
         h_particle[idx] = h_now
         v_rel_particle[idx] = np.sqrt(vrel_x_particle**2 + vrel_y_particle**2)
         capture_fraction[idx] = float(np.mean(h_now >= 0.0))
@@ -326,6 +336,7 @@ def print_summary(
     monthly_alert = particles["mean_h"] < 0.0
     annual_capture_proxy = float(np.mean(np.maximum(rotor["cp"], 0.0)))
     annual_omega = float(np.mean(rotor["omega"]))
+    monthly_negative = int(np.count_nonzero(particles["mean_h"][:MONTH_FRAMES] < 0.0))
 
     annual_ring_mean = np.mean(azimuth["v_rel_mag"], axis=0)
     dominant_idx = int(np.argmax(annual_ring_mean))
@@ -341,12 +352,86 @@ def print_summary(
     print(f"Mean |v_rel(phi)| around rotor: {mean_ring_vrel:.3f} m/s")
     print(
         "Hours with negative monthly mean h(x): "
-        f"{int(np.count_nonzero(monthly_alert))}/{MONTH_FRAMES} "
-        f"({100.0 * np.count_nonzero(monthly_alert) / MONTH_FRAMES:.1f}% of month-1 animation window)"
+        f"{monthly_negative}/{MONTH_FRAMES} "
+        f"({100.0 * monthly_negative / MONTH_FRAMES:.1f}% of month-1 animation window)"
     )
     print(f"Peak azimuth sector by annual mean |v_rel|: {sector_start}-{sector_end} deg")
     print(f"Estimated annual electrical energy (plant, MWh): {annual_energy_mwh:.3f}")
     print("Assumption note: lambda(d) and mu(d) are distance-gated heuristic terms until the exact paper form is encoded.")
+
+
+def export_sphere_metrics(
+    output_dir: Path,
+    state: dict[str, np.ndarray],
+    rotor: dict[str, np.ndarray],
+    azimuth: dict[str, np.ndarray],
+    particles: dict[str, np.ndarray],
+) -> tuple[Path, Path, Path]:
+    hourly_path = output_dir / "viz10_sphere_hourly_metrics.csv"
+    azimuth_path = output_dir / "viz10_blade_azimuth_month1.csv"
+    particle_path = output_dir / "viz10_particle_capture_month1.csv"
+
+    frame_count = min(MONTH_FRAMES, len(state["hours"]))
+    hourly_df = pd.DataFrame(
+        {
+            "hour_of_year": state["hours"],
+            "season": state["seasons"],
+            "u_mean_ms": state["u_mean"],
+            "u_prime_ms": state["u_prime"],
+            "u_total_ms": state["u_total"],
+            "theta_deg": state["theta_deg"],
+            "wind_vec_x_ms": state["wind_vec_x"],
+            "wind_vec_y_ms": state["wind_vec_y"],
+            "omega_rad_s": rotor["omega"],
+            "domega_dt": rotor["domega_dt"],
+            "omega_cross_r_ms": rotor["omega_cross_r"],
+            "rotor_rpm": rotor["rotor_rpm"],
+            "tsr": rotor["tsr"],
+            "cp_effective": rotor["cp"],
+            "aero_torque_nm": rotor["t_aero"],
+            "generator_torque_nm": rotor["gen_torque"],
+            "brake_torque_nm": rotor["brake_torque"],
+            "electrical_power_kw": rotor["p_elec_kw"],
+            "particle_capture_fraction": particles["capture_fraction"],
+            "particle_mean_h": particles["mean_h"],
+            "particle_mean_radius_m": particles["mean_radius"],
+        }
+    )
+    hourly_df.to_csv(hourly_path, index=False)
+
+    hour_grid = np.repeat(state["hours"][:frame_count], N_AZIMUTH)
+    phi_deg_grid = np.tile(np.rad2deg(azimuth["phi"]), frame_count)
+    azimuth_df = pd.DataFrame(
+        {
+            "hour_of_year": hour_grid,
+            "phi_deg": phi_deg_grid,
+            "v_rel_x_ms": azimuth["v_rel_x"][:frame_count].reshape(-1),
+            "v_rel_y_ms": azimuth["v_rel_y"][:frame_count].reshape(-1),
+            "v_rel_mag_ms": azimuth["v_rel_mag"][:frame_count].reshape(-1),
+            "h_tip": azimuth["h_tip"][:frame_count].reshape(-1),
+        }
+    )
+    azimuth_df.to_csv(azimuth_path, index=False)
+
+    particle_hour_grid = np.repeat(state["hours"][:frame_count], N_PARTICLES)
+    particle_index_grid = np.tile(np.arange(N_PARTICLES, dtype=int), frame_count)
+    particle_df = pd.DataFrame(
+        {
+            "hour_of_year": particle_hour_grid,
+            "particle_index": particle_index_grid,
+            "x_m": particles["positions"][:frame_count, :, 0].reshape(-1),
+            "y_m": particles["positions"][:frame_count, :, 1].reshape(-1),
+            "z_m": particles["positions"][:frame_count, :, 2].reshape(-1),
+            "v_rel_particle_ms": particles["v_rel_particle"][:frame_count].reshape(-1),
+            "h_particle": particles["h_particle"][:frame_count].reshape(-1),
+        }
+    )
+    particle_df.to_csv(particle_path, index=False)
+
+    print(f"Saved sphere metrics: {hourly_path.name} ({len(hourly_df)} rows)")
+    print(f"Saved azimuth metrics: {azimuth_path.name} ({len(azimuth_df)} rows)")
+    print(f"Saved particle metrics: {particle_path.name} ({len(particle_df)} rows)")
+    return hourly_path, azimuth_path, particle_path
 
 
 def make_annotations(
@@ -880,6 +965,7 @@ def main() -> None:
     particle_state = simulate_particles(state, azimuth)
 
     print_summary(state, rotor, azimuth, particle_state)
+    export_sphere_metrics(output_dir, state, rotor, azimuth, particle_state)
 
     fig = build_figure(state, rotor, azimuth, particle_state)
     fig.write_html(output_path, include_plotlyjs="cdn")
