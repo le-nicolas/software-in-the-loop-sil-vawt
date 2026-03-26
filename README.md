@@ -1,32 +1,53 @@
-# Software-in-the-Loop (SIL) VAWT
+# Software-in-the-Loop VAWT
 
-Wind-data, spatial-field, visualization, and early SIL scaffolding for a vertical-axis wind turbine feasibility project in Cagayan de Oro, Philippines.
+![Status](https://img.shields.io/badge/status-active_research-0f766e)
+![Stage](https://img.shields.io/badge/stage-early_SIL_scaffold-1d4ed8)
+![Location](https://img.shields.io/badge/site-Cagayan_de_Oro,_PH-475569)
 
-## What This Repo Is
+Transparent wind-resource analysis, spatial wind-field modeling, visualization, and early software-in-the-loop work for a vertical-axis wind turbine feasibility study in Cagayan de Oro, Philippines.
 
-This project started as a validated hourly wind-resource dataset and has been extended into an early Software-in-the-Loop pipeline:
+## Research Status
 
-- single-point 2023 wind resource data for CDO
-- derived hub-height wind columns and validation utilities
-- gradient and turbulence proxy analysis
-- interactive 3D Plotly/Dash visualizations
-- spatial wind-field builders
-- a first closed-loop SIL scaffold:
-  wind forcing -> controller -> plant model -> simulated outputs
+This repository is under active research and remains a working engineering notebook as well as a codebase.
 
-It is not yet a full turbine digital twin. The plant and controller are still placeholder engineering models.
+- stable foundation: hourly 2023 CDO wind dataset, derived height columns, spatial analysis utilities, reproducible plots, and an early SIL loop
+- still in-progress: controller fidelity, plant physics, terrain correction quality, and validation depth
+- not yet claimed: bankable resource assessment, final micrositing accuracy, or full digital-twin realism
 
-## Core Data
+If you are viewing this from GitHub, the intended repo description is:
 
-### Master dataset
+`Active research: transparent wind-resource, spatial-field, and early SIL modeling for a CDO VAWT study`
+
+## What This Repo Contains
+
+- `CDO_wind_2023_hourly.csv`: the main hourly wind dataset for 2023
+- height-derived wind columns and atmospheric metrics
+- spatial wind-field builders using hybrid and refined workflows
+- interactive Plotly and Dash visualizations
+- early software-in-the-loop controller and plant scaffolding
+- validation-source fetches and supporting raw reference files
+
+## Transparency Notes
+
+This project is intentionally transparent about what each dataset or model can and cannot support.
+
+- NASA POWER is the base hourly series for the master dataset
+- Open-Meteo ERA5-Seamless is used for refined spatial-pattern exploration
+- some files are evidence-building validation inputs, not final truth sources
+- current SIL controller and plant dynamics are placeholders for research iteration
+- rebuildable outputs are separated from the master dataset so the core source stays clean
+
+## Core Dataset
+
+Primary file:
 
 - `CDO_wind_2023_hourly.csv`
 
 Authoritative shape and schema:
 
 - `8760 x 19`
-- civil Philippines time `UTC+8`
-- `hour_of_year` is the universal alignment key
+- local civil time in the Philippines: `UTC+8`
+- `hour_of_year` is the alignment key across downstream processing
 
 Permanent master schema:
 
@@ -50,94 +71,79 @@ Permanent master schema:
 18. `wind_speed_50m_ms_derived`
 19. `alpha_actual`
 
-### Location
+Location:
 
-- `Cagayan de Oro, Misamis Oriental, Philippines`
+- Cagayan de Oro, Misamis Oriental, Philippines
 - latitude: `8.482`
 - longitude: `124.647`
 
-## Data Sources
+## Data and Modeling Layers
 
-### 1. NASA POWER master series
+### 1. Master hourly series
 
-The master hourly series is built from NASA POWER hourly data and converted from Local Solar Time to civil `UTC+8`.
+Built from NASA POWER hourly data and converted from Local Solar Time into civil `UTC+8`.
 
 ### 2. Hybrid spatial field
 
-The first spatial-field approach uses:
+Uses the CDO center series plus terrain-informed speed multipliers.
 
-- the master center time series
-- terrain-informed speed multipliers
+Current limitation:
 
-Important limitation:
+- wind direction is shared across the grid for a given hour
+- speed varies spatially, but directional structure is simplified
 
-- wind direction is identical across all 25 grid points for any given hour
-- only wind speed varies spatially
+### 3. Refined spatial field
 
-This is useful for early visualization, but not true spatial wind measurement.
+Uses Open-Meteo Historical Weather API with `ERA5-Seamless` across the 25-point grid.
 
-### 3. Refined Open-Meteo spatial field
+Available refined variables include:
 
-The repo also includes a direct refined spatial-grid fetch from Open-Meteo Historical Weather API using `ERA5-Seamless`:
-
-- per-point `10m` wind speed
-- per-point `10m` wind direction
-- per-point `100m` wind speed
-- per-point `100m` wind direction
-- per-point temperature and humidity
-- per-point DEM elevation
-
-This is a real per-point spatial source and gives direction variation across the grid. It is still reanalysis-scale data, not micrositing-grade measurement.
+- per-point wind speed and direction
+- temperature and humidity
+- DEM elevation
 
 Interpretation rule:
 
-- reanalysis-detected spatial patterns are treated as evidence or candidate events
-- they are not treated as proof until they are supported by local measurements or higher-fidelity modeling
+- refined spatial patterns are treated as candidate evidence
+- they are not treated as proof until backed by local measurements or higher-fidelity modeling
 
-## Current Accuracy Position
+## Accuracy Position
 
 Reasonable for:
 
-- feasibility-level resource exploration
-- controller/plant prototyping
-- early SIL forcing development
-- comparative spatial scenario work
+- feasibility-stage wind-resource exploration
+- forcing development for early controller and plant experiments
+- comparative spatial scenario analysis
+- research visualization and workflow prototyping
 
 Not sufficient for:
 
-- bankable energy estimates
+- bankable yield assessment
 - final micrositing
-- CFD-grade building/terrain flow distortion
-- design signoff without measurement calibration
+- CFD-grade local flow distortion conclusions
+- design signoff without calibration against measurements
 
-## Main Scripts
+## Main Files
 
-### Data building
+### Data build and analysis
 
-- `fetch_cdo_wind_2023.py`
-  NASA POWER fetch and base dataset build
-- `add_wind_height_columns.py`
-  derived height columns and `alpha_actual`
-- `build_gradients_analysis.py`
-  gradients, turbulence proxies, WPD, density anomaly, Beaufort, and related analysis
+- `fetch_cdo_wind_2023.py`: build the base NASA POWER dataset
+- `add_wind_height_columns.py`: derive additional wind-height columns and `alpha_actual`
+- `build_gradients_analysis.py`: derive gradients, turbulence proxies, WPD, Beaufort, and related metrics
+- `fetch_cdo_validation_sources.py`: pull and organize supporting validation sources
 
 ### Spatial field
 
-- `build_hybrid_spatial_field.py`
-  center-series plus terrain-multiplier spatial field
-- `fetch_openmeteo_refined_grid.py`
-  direct 25-point refined spatial grid from Open-Meteo `ERA5-Seamless`
-- `create_gwa_manual_template.py`
-  template for manually entered Global Wind Atlas corrections
-- `build_refined_spatial_field.py`
-  builds a refined grid from the manual GWA template once populated
-- `CDO_spatial_multipliers.py`
-  current hybrid spatial multiplier map
-- `spatial_turbulence_model.py`
-  correlated turbulence model for spatial forcing and early SIL work
+- `build_hybrid_spatial_field.py`: terrain-multiplier grid from the center time series
+- `fetch_openmeteo_refined_grid.py`: direct refined 25-point Open-Meteo fetch
+- `create_gwa_manual_template.py`: template for manual Global Wind Atlas inputs
+- `build_refined_spatial_field.py`: construct a refined field from populated manual inputs
+- `CDO_spatial_multipliers.py`: current multiplier map
+- `spatial_turbulence_model.py`: correlated turbulence model for spatial forcing
 
 ### Visualization
 
+- `build_visualizations.py`
 - `viz1_vector_field.py`
 - `viz2_wind_rose_3d.py`
 - `viz3_interactive_slider.py`
@@ -147,133 +153,73 @@ Not sufficient for:
 - `viz7_dash_spatial.py`
 - `viz7_spatial_field_slider.py`
 - `viz8_wpd_spatial_slider.py`
-- `build_visualizations.py`
 
-Primary live app:
+Primary interactive apps:
 
 - `viz7_spatial_field_slider.py`
 - `viz8_wpd_spatial_slider.py`
 
 ### Early SIL scaffold
 
-- `sil_controller.py`
-  minimal controller scaffold with startup, MPPT-style torque command, and overspeed brake behavior
-- `sil_plant_model.py`
-  minimal dynamic VAWT plant model with inertia, aero torque, damping, and electrical output
-- `run_sil_simulation.py`
-  full-year closed-loop simulation using blended spatial forcing
+- `sil_controller.py`: startup logic, MPPT-style torque command, and overspeed braking scaffold
+- `sil_plant_model.py`: simple VAWT plant model with inertia, aero torque, damping, and electrical output
+- `run_sil_simulation.py`: year-scale closed-loop simulation using blended spatial forcing
 
-## Current SIL Architecture
+## Current SIL Loop
 
-Current loop:
+1. Spatial wind forcing is assembled from center-series magnitude, refined spatial ratios and direction deltas, plus turbulence.
+2. The wind field is disk-averaged to an effective inflow.
+3. The controller reads simulated wind and rotor speed.
+4. The controller issues torque and brake commands.
+5. The plant advances rotor state and electrical output.
+6. Hourly outputs are logged for analysis.
 
-1. spatial wind forcing is built from:
-   - NASA master center magnitude
-   - Open-Meteo refined per-point speed ratios
-   - Open-Meteo refined per-point direction deltas
-   - correlated turbulence
-2. the wind field is disk-averaged to an effective inflow
-3. controller reads simulated wind and rotor speed
-4. controller issues generator torque / brake commands
-5. plant advances rotor state and electrical output
-6. hourly outputs are logged
-
-Generated SIL outputs are rebuildable and therefore ignored in git by default.
-
-## Validation Rules
-
-Project-wide data rules:
+## Project Rules
 
 - no silent zero-fill of missing wind values
-- no dropped rows from the master hourly series
-- master schema fixed at `8760 x 19`
-- future derived data goes into separate analysis files, not the master CSV
-- floating-point CSV rewrites are validated numerically, not by exact float string match
+- no row-dropping from the master hourly series
+- master schema remains fixed at `8760 x 19`
+- new derived outputs belong in separate analysis files, not inside the master CSV
+- floating-point rewrites are validated numerically, not by exact string equality
 
-## Key Constants
-
-See `CDO_project_constants.py`.
-
-Important values include:
-
-- `ALPHA_CDO_CANONICAL`
-- `CDO_CENTER_WS15_MEAN`
-- `SWEPT_AREA_M2`
-- `CP_GENERIC`
-- `TURBINE_RATED_KW`
-
-The turbine geometry and SIL plant constants are still placeholders and are explicitly marked that way in code.
-
-## Commands
-
-Rebuild derived master-analysis columns:
+## Quick Start
 
 ```bash
 python add_wind_height_columns.py
 python build_gradients_analysis.py
-```
-
-Rebuild hybrid spatial field:
-
-```bash
 python build_hybrid_spatial_field.py
-```
-
-Fetch refined Open-Meteo spatial field:
-
-```bash
 python fetch_openmeteo_refined_grid.py
-```
-
-Build manual-GWA refined field after populating the template:
-
-```bash
-python create_gwa_manual_template.py
-python build_refined_spatial_field.py
-```
-
-Run the main Dash spatial app:
-
-```bash
-python viz7_spatial_field_slider.py
-```
-
-Run the refined WPD spatial app:
-
-```bash
-python viz8_wpd_spatial_slider.py
-```
-
-Run the first-pass SIL simulation:
-
-```bash
 python run_sil_simulation.py
 ```
 
-## Generated Artifacts Policy
+Launch the main spatial viewers:
+
+```bash
+python viz7_spatial_field_slider.py
+python viz8_wpd_spatial_slider.py
+```
+
+## Tracked vs Generated
 
 Tracked:
 
 - source code
 - constants
 - master dataset
-- lightweight documentation and template inputs
+- lightweight templates
+- raw validation-reference inputs used for transparency and reproducibility
 
 Ignored:
 
-- generated visualization HTML files
-- large generated spatial CSVs
-- generated SIL result CSVs
-
-This keeps the repo clonable while allowing every heavy artifact to be rebuilt locally.
+- generated visualization HTML
+- generated spatial CSVs
+- generated SIL output CSVs
 
 ## What Comes Next
 
-The highest-value next upgrades are:
-
-- replace placeholder plant aerodynamics with a VAWT performance map
-- add richer controller logic
-- add explicit sensor models and faults
-- calibrate forcing against local measurements
-- integrate better terrain/roughness/coastline corrections
-- move from early SIL scaffold toward a true plant-controller test harness
+- replace placeholder aerodynamics with a better VAWT performance representation
+- deepen controller logic and state handling
+- add sensor models and fault scenarios
+- tighten validation against local or nearby measurements
+- improve terrain, roughness, and coastline corrections
+- mature the workflow from early SIL scaffold toward a stronger research test harness

@@ -1,0 +1,46 @@
+CDO Refined Spatial Field Analysis
+Source file: CDO_grid_wind_2023_long_openmeteo.csv
+
+Afternoon north-to-south row mean ws15 (12:00-17:59):
+- R4 mean ws15: 2.869907 m/s
+- R3 mean ws15: 1.949192 m/s
+- R2 mean ws15: 1.720524 m/s
+- R1 mean ws15: 1.720313 m/s
+- R0 mean ws15: 1.570608 m/s
+- Afternoon hours with north row faster than south row: 89.59%
+
+Overall north-to-south row mean ws15:
+- R4 mean ws15: 2.343900 m/s
+- R3 mean ws15: 1.414975 m/s
+- R2 mean ws15: 1.232281 m/s
+- R1 mean ws15: 1.231440 m/s
+- R0 mean ws15: 1.148210 m/s
+
+November north-first Amihan reanalysis candidate events:
+- Interpretation note: these are reanalysis-supported candidate events, not measurement proof of front arrival.
+- Candidate hours: 295
+- Contiguous events >= 3 hours: 31
+- 2023-11-03 04:00:00 to 2023-11-03 07:00:00 (4 h): north dir 330.1 deg, south dir 150.8 deg, north ws15 0.659, south ws15 0.375
+- 2023-11-03 20:00:00 to 2023-11-04 08:00:00 (13 h): north dir 21.4 deg, south dir 185.0 deg, north ws15 2.363, south ws15 0.821
+- 2023-11-04 20:00:00 to 2023-11-05 02:00:00 (7 h): north dir 39.2 deg, south dir 127.7 deg, north ws15 1.707, south ws15 0.240
+- 2023-11-06 00:00:00 to 2023-11-06 08:00:00 (9 h): north dir 25.4 deg, south dir 136.7 deg, north ws15 0.984, south ws15 0.908
+- 2023-11-06 17:00:00 to 2023-11-07 05:00:00 (13 h): north dir 26.3 deg, south dir 299.3 deg, north ws15 3.932, south ws15 1.101
+- 2023-11-07 18:00:00 to 2023-11-08 03:00:00 (10 h): north dir 36.5 deg, south dir 168.2 deg, north ws15 4.022, south ws15 0.641
+- 2023-11-08 22:00:00 to 2023-11-09 00:00:00 (3 h): north dir 52.8 deg, south dir 102.5 deg, north ws15 1.583, south ws15 0.811
+- 2023-11-09 18:00:00 to 2023-11-10 00:00:00 (7 h): north dir 45.8 deg, south dir 116.6 deg, north ws15 2.656, south ws15 0.347
+- 2023-11-10 02:00:00 to 2023-11-10 04:00:00 (3 h): north dir 80.0 deg, south dir 149.4 deg, north ws15 1.414, south ws15 1.102
+- 2023-11-10 19:00:00 to 2023-11-11 04:00:00 (10 h): north dir 65.9 deg, south dir 105.2 deg, north ws15 1.926, south ws15 0.961
+
+Top 5 mean WPD hotspots at 15 m:
+- R4C1: 27.788184 W/m^2 (row=4, col=1)
+- R4C0: 27.788184 W/m^2 (row=4, col=0)
+- R4C4: 8.022500 W/m^2 (row=4, col=4)
+- R4C3: 7.962379 W/m^2 (row=4, col=3)
+- R4C2: 7.903848 W/m^2 (row=4, col=2)
+
+Bottom 5 mean WPD cells at 15 m:
+- R0C2: 1.622164 W/m^2 (row=0, col=2)
+- R0C3: 1.630658 W/m^2 (row=0, col=3)
+- R0C4: 1.634636 W/m^2 (row=0, col=4)
+- R3C3: 2.079185 W/m^2 (row=3, col=3)
+- R2C4: 2.082393 W/m^2 (row=2, col=4)
