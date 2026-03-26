@@ -4,10 +4,11 @@
 #
 # Physics:
 #   U(t) = U_mean + u'(t), with u' made explicit as an AR(1) turbulence process
-#   dx/dt = U_mean*sin(theta), dy/dt = U_mean*cos(theta), dz/dt = 0
+#   dx/dt = v_air,x, dy/dt = v_air,y, dz/dt = v_air,z
+#   dv_air/dt = (v_infty + v_induced - v_air) / tau_air
 #   domega/dt = (T_aero - T_gen - B*omega) / J, using the existing SIL plant/controller
 #   v_rel(phi) = v_wind_vector - omega*R*tangent(phi), evaluated around the full rotor circle
-#   h(x) = v_rel,x + lambda(d)*v_rel,y^2 + mu(d), evaluated per particle
+#   h(x) = v_rel,los_x + lambda(d,|v_rel|)*v_rel,los_y^2 + mu(d), evaluated in the LoS frame
 #
 # Design insight:
 #   This script makes the missing link explicit:
@@ -48,6 +49,13 @@ TURBULENCE_INTENSITY = 0.10
 N_PARTICLES = 90
 N_AZIMUTH = 72
 RNG_SEED = 2027
+SAFE_CORE_RADIUS_M = 0.55 * ROTOR_RADIUS_M
+AMBIENT_RELAXATION_S = 1.8
+INDUCED_SWIRL_GAIN = 0.65
+INDUCED_DECAY_RADIUS_M = 1.15 * ROTOR_RADIUS_M
+INDUCED_VERTICAL_GAIN = 0.04
+K_LAMBDA = 0.9
+K_MU = 0.6
 
 PARTICLE_COLORSCALE = [
     [0.0, "#991b1b"],
@@ -187,6 +195,13 @@ def compute_azimuthal_relative_velocity(
     rotor: dict[str, np.ndarray],
 ) -> dict[str, np.ndarray]:
     phi = np.linspace(0.0, 2.0 * np.pi, N_AZIMUTH, endpoint=False)
+    ring_x = ROTOR_RADIUS_M * np.cos(phi)
+    ring_y = ROTOR_RADIUS_M * np.sin(phi)
+    p_rel_x = -ring_x
+    p_rel_y = -ring_y
+    p_rel_norm = np.sqrt(p_rel_x**2 + p_rel_y**2)
+    los_angle = np.arctan2(p_rel_y, p_rel_x)
+
     tangent_x = -np.sin(phi)
     tangent_y = np.cos(phi)
 
@@ -196,16 +211,27 @@ def compute_azimuthal_relative_velocity(
     v_rel_x = state["wind_vec_x"][:, None] - tip_vel_x
     v_rel_y = state["wind_vec_y"][:, None] - tip_vel_y
     v_rel_mag = np.sqrt(v_rel_x**2 + v_rel_y**2)
+    cos_los = np.cos(los_angle)[None, :]
+    sin_los = np.sin(los_angle)[None, :]
+    v_rel_los_x = cos_los * v_rel_x + sin_los * v_rel_y
+    v_rel_los_y = -sin_los * v_rel_x + cos_los * v_rel_y
 
-    lambda_tip = np.full_like(v_rel_x, 0.005)
-    mu_tip = np.full_like(v_rel_x, -0.15)
-    h_tip = v_rel_x + lambda_tip * (v_rel_y**2) + mu_tip
+    d_tip = np.sqrt(np.maximum(p_rel_norm**2 - SAFE_CORE_RADIUS_M**2, 1e-9))[None, :]
+    lambda_tip = K_LAMBDA * d_tip / np.maximum(v_rel_mag, 0.1)
+    mu_tip = np.broadcast_to(K_MU * d_tip, v_rel_mag.shape)
+    h_tip = v_rel_los_x + lambda_tip * (v_rel_los_y**2) + mu_tip
 
     return {
         "phi": phi,
+        "ring_x": ring_x,
+        "ring_y": ring_y,
         "v_rel_x": v_rel_x,
         "v_rel_y": v_rel_y,
         "v_rel_mag": v_rel_mag,
+        "v_rel_los_x": v_rel_los_x,
+        "v_rel_los_y": v_rel_los_y,
+        "lambda_tip": lambda_tip,
+        "mu_tip": mu_tip,
         "h_tip": h_tip,
     }
 
@@ -226,14 +252,26 @@ def periodic_interp(sample_angles: np.ndarray, grid_angles: np.ndarray, values: 
 
 
 def lambda_mu_from_distance(distance_norm: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    clipped = np.clip(distance_norm, -1.0, 1.0)
-    lambda_d = 0.005 + 0.025 * np.clip(clipped, 0.0, 1.0)
-    mu_d = 0.40 * clipped - 0.15
+    clipped = np.clip(distance_norm, 0.0, 2.0)
+    lambda_d = K_LAMBDA * clipped
+    mu_d = K_MU * clipped
     return lambda_d, mu_d
+
+
+def induced_air_velocity(position_xy: np.ndarray, omega: float) -> np.ndarray:
+    x, y = position_xy
+    radius = float(np.hypot(x, y))
+    if radius < 1e-9:
+        tangent = np.array([0.0, 0.0], dtype=float)
+    else:
+        tangent = np.array([-y, x], dtype=float) / radius
+    swirl_strength = INDUCED_SWIRL_GAIN * omega * ROTOR_RADIUS_M * np.exp(-(radius / INDUCED_DECAY_RADIUS_M) ** 2)
+    return swirl_strength * tangent
 
 
 def simulate_particles(
     state: dict[str, np.ndarray],
+    rotor: dict[str, np.ndarray],
     azimuth: dict[str, np.ndarray],
 ) -> dict[str, np.ndarray]:
     n_steps = len(state["hours"])
@@ -243,18 +281,37 @@ def simulate_particles(
     positions = np.zeros((frame_count, N_PARTICLES, 3), dtype=float)
     h_particle = np.zeros((n_steps, N_PARTICLES), dtype=float)
     v_rel_particle = np.zeros((n_steps, N_PARTICLES), dtype=float)
+    v_rel_los_x_particle = np.zeros((n_steps, N_PARTICLES), dtype=float)
+    v_rel_los_y_particle = np.zeros((n_steps, N_PARTICLES), dtype=float)
+    lambda_particle = np.zeros((n_steps, N_PARTICLES), dtype=float)
+    mu_particle = np.zeros((n_steps, N_PARTICLES), dtype=float)
+    d_clearance = np.zeros((n_steps, N_PARTICLES), dtype=float)
     capture_fraction = np.zeros(n_steps, dtype=float)
     mean_h = np.zeros(n_steps, dtype=float)
     mean_radius = np.zeros(n_steps, dtype=float)
 
     particles = np.stack([upstream_spawn(state["theta_rad"][0], rng) for _ in range(N_PARTICLES)], axis=0)
+    velocities = np.zeros((N_PARTICLES, 3), dtype=float)
+    velocities[:, 0] = state["u_mean"][0] * np.sin(state["theta_rad"][0])
+    velocities[:, 1] = state["u_mean"][0] * np.cos(state["theta_rad"][0])
 
     for idx in range(n_steps):
+        ambient_target = np.array(
+            [
+                state["u_mean"][idx] * np.sin(state["theta_rad"][idx]),
+                state["u_mean"][idx] * np.cos(state["theta_rad"][idx]),
+                INDUCED_VERTICAL_GAIN * state["u_prime"][idx],
+            ],
+            dtype=float,
+        )
+
         if idx > 0:
-            vx = state["u_mean"][idx] * np.sin(state["theta_rad"][idx])
-            vy = state["u_mean"][idx] * np.cos(state["theta_rad"][idx])
-            particles[:, 0] += vx * DT_VIZ_S
-            particles[:, 1] += vy * DT_VIZ_S
+            for p_idx in range(N_PARTICLES):
+                induced_xy = induced_air_velocity(particles[p_idx, :2], rotor["omega"][idx])
+                induced = np.array([induced_xy[0], induced_xy[1], 0.0], dtype=float)
+                dv_dt = (ambient_target + induced - velocities[p_idx]) / AMBIENT_RELAXATION_S
+                velocities[p_idx] = velocities[p_idx] + dv_dt * DT_VIZ_S
+            particles = particles + velocities * DT_VIZ_S
 
         r_now = np.linalg.norm(particles, axis=1)
         escaped = r_now > (2.5 * ROTOR_RADIUS_M)
@@ -263,19 +320,43 @@ def simulate_particles(
                 [upstream_spawn(state["theta_rad"][idx], rng) for _ in range(int(np.count_nonzero(escaped)))],
                 axis=0,
             )
+            velocities[escaped, 0] = ambient_target[0]
+            velocities[escaped, 1] = ambient_target[1]
+            velocities[escaped, 2] = ambient_target[2]
             r_now = np.linalg.norm(particles, axis=1)
 
+        p_rel_x = -particles[:, 0]
+        p_rel_y = -particles[:, 1]
+        p_rel_norm = np.sqrt(p_rel_x**2 + p_rel_y**2)
+        los_angle = np.arctan2(p_rel_y, p_rel_x)
+        cos_los = np.cos(los_angle)
+        sin_los = np.sin(los_angle)
+
         phi_particle = np.mod(np.arctan2(particles[:, 1], particles[:, 0]), 2.0 * np.pi)
-        vrel_x_particle = periodic_interp(phi_particle, azimuth["phi"], azimuth["v_rel_x"][idx])
-        vrel_y_particle = periodic_interp(phi_particle, azimuth["phi"], azimuth["v_rel_y"][idx])
-        distance_norm = (ROTOR_RADIUS_M - r_now) / ROTOR_RADIUS_M
-        lambda_d, mu_d = lambda_mu_from_distance(distance_norm)
-        h_now = vrel_x_particle + lambda_d * (vrel_y_particle**2) + mu_d
+        local_air_x = velocities[:, 0]
+        local_air_y = velocities[:, 1]
+        tip_vel_x = rotor["omega"][idx] * ROTOR_RADIUS_M * (-np.sin(phi_particle))
+        tip_vel_y = rotor["omega"][idx] * ROTOR_RADIUS_M * (np.cos(phi_particle))
+        local_vrel_x = local_air_x - tip_vel_x
+        local_vrel_y = local_air_y - tip_vel_y
+        local_vrel_mag = np.sqrt(local_vrel_x**2 + local_vrel_y**2)
+        local_vrel_los_x = cos_los * local_vrel_x + sin_los * local_vrel_y
+        local_vrel_los_y = -sin_los * local_vrel_x + cos_los * local_vrel_y
+
+        clearance = np.sqrt(np.maximum(p_rel_norm**2 - SAFE_CORE_RADIUS_M**2, 1e-9))
+        lambda_d = K_LAMBDA * clearance / np.maximum(local_vrel_mag, 0.1)
+        mu_d = K_MU * clearance
+        h_now = local_vrel_los_x + lambda_d * (local_vrel_los_y**2) + mu_d
 
         if idx < frame_count:
             positions[idx] = particles
         h_particle[idx] = h_now
-        v_rel_particle[idx] = np.sqrt(vrel_x_particle**2 + vrel_y_particle**2)
+        v_rel_particle[idx] = local_vrel_mag
+        v_rel_los_x_particle[idx] = local_vrel_los_x
+        v_rel_los_y_particle[idx] = local_vrel_los_y
+        lambda_particle[idx] = lambda_d
+        mu_particle[idx] = mu_d
+        d_clearance[idx] = clearance
         capture_fraction[idx] = float(np.mean(h_now >= 0.0))
         mean_h[idx] = float(np.mean(h_now))
         mean_radius[idx] = float(np.mean(r_now))
@@ -284,6 +365,11 @@ def simulate_particles(
         "positions": positions,
         "h_particle": h_particle,
         "v_rel_particle": v_rel_particle,
+        "v_rel_los_x_particle": v_rel_los_x_particle,
+        "v_rel_los_y_particle": v_rel_los_y_particle,
+        "lambda_particle": lambda_particle,
+        "mu_particle": mu_particle,
+        "d_clearance": d_clearance,
         "capture_fraction": capture_fraction,
         "mean_h": mean_h,
         "mean_radius": mean_radius,
@@ -357,7 +443,7 @@ def print_summary(
     )
     print(f"Peak azimuth sector by annual mean |v_rel|: {sector_start}-{sector_end} deg")
     print(f"Estimated annual electrical energy (plant, MWh): {annual_energy_mwh:.3f}")
-    print("Assumption note: lambda(d) and mu(d) are distance-gated heuristic terms until the exact paper form is encoded.")
+    print("Assumption note: lambda ~ k_lambda*d/|v_rel| and mu ~ k_mu*d are paper-inspired mappings adapted to the rotor sphere.")
 
 
 def export_sphere_metrics(
@@ -407,7 +493,11 @@ def export_sphere_metrics(
             "phi_deg": phi_deg_grid,
             "v_rel_x_ms": azimuth["v_rel_x"][:frame_count].reshape(-1),
             "v_rel_y_ms": azimuth["v_rel_y"][:frame_count].reshape(-1),
+            "v_rel_los_x_ms": azimuth["v_rel_los_x"][:frame_count].reshape(-1),
+            "v_rel_los_y_ms": azimuth["v_rel_los_y"][:frame_count].reshape(-1),
             "v_rel_mag_ms": azimuth["v_rel_mag"][:frame_count].reshape(-1),
+            "lambda_tip": azimuth["lambda_tip"][:frame_count].reshape(-1),
+            "mu_tip": azimuth["mu_tip"][:frame_count].reshape(-1),
             "h_tip": azimuth["h_tip"][:frame_count].reshape(-1),
         }
     )
@@ -423,6 +513,11 @@ def export_sphere_metrics(
             "y_m": particles["positions"][:frame_count, :, 1].reshape(-1),
             "z_m": particles["positions"][:frame_count, :, 2].reshape(-1),
             "v_rel_particle_ms": particles["v_rel_particle"][:frame_count].reshape(-1),
+            "v_rel_los_x_ms": particles["v_rel_los_x_particle"][:frame_count].reshape(-1),
+            "v_rel_los_y_ms": particles["v_rel_los_y_particle"][:frame_count].reshape(-1),
+            "d_clearance_m": particles["d_clearance"][:frame_count].reshape(-1),
+            "lambda_particle": particles["lambda_particle"][:frame_count].reshape(-1),
+            "mu_particle": particles["mu_particle"][:frame_count].reshape(-1),
             "h_particle": particles["h_particle"][:frame_count].reshape(-1),
         }
     )
@@ -962,7 +1057,7 @@ def main() -> None:
     state = build_wind_state(df)
     rotor = simulate_rotor_response(state)
     azimuth = compute_azimuthal_relative_velocity(state, rotor)
-    particle_state = simulate_particles(state, azimuth)
+    particle_state = simulate_particles(state, rotor, azimuth)
 
     print_summary(state, rotor, azimuth, particle_state)
     export_sphere_metrics(output_dir, state, rotor, azimuth, particle_state)

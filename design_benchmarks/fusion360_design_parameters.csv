@@ -22,12 +22,12 @@ cp_operating_p90,0.33316315926678913,-,Operating-hour percentile
 vrel_ring_mean_p50_ms,7.012552982386336,m/s,Mean azimuthal relative speed
 vrel_ring_mean_p90_ms,17.689548371012584,m/s,Mean azimuthal relative speed
 vrel_ring_peak_p95_ms,23.584853424431955,m/s,Peak azimuthal relative speed
-capture_fraction_p10,0.0,-,Lower-tail monthly capture proxy
-capture_fraction_p50,0.4444444444444444,-,Median monthly capture proxy
+capture_fraction_p10,0.4222222222222222,-,Lower-tail monthly capture proxy
+capture_fraction_p50,0.9,-,Median monthly capture proxy
 capture_fraction_p90,1.0,-,Upper-tail monthly capture proxy
-mean_h_p10,-6.213600237736217,-,Lower-tail DPCBF mean h
-mean_h_p50,-0.4682820570447387,-,Median DPCBF mean h
-mean_h_p90,4.21044494509453,-,Upper-tail DPCBF mean h
+mean_h_p10,0.4227621993785746,-,Lower-tail DPCBF mean h
+mean_h_p50,6.469042588202136,-,Median DPCBF mean h
+mean_h_p90,20.342265618807225,-,Upper-tail DPCBF mean h
 dominant_peak_sector_deg,210.0,deg,Annual max-mean azimuth sector
 recommended_nominal_tsr,2.2,-,Use as Fusion360 motion baseline
 recommended_nominal_rpm,75.68046369132566,rpm,Nominal CAD animation / design case

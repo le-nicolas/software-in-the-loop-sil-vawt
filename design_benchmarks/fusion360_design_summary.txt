@@ -10,6 +10,6 @@ Upper rotor speed (P90): 220.00 rpm
 Design aero torque (P90): 7.300 N*m
 Peak aero torque (P95): 9.620 N*m
 Peak azimuth sector: 210.0 deg
-Lower-tail capture fraction (P10): 0.000
-Median capture fraction: 0.444
+Lower-tail capture fraction (P10): 0.422
+Median capture fraction: 0.900
 Use the load-case table for Fusion360 motion studies, interference envelopes, and first-pass structural load conditions.

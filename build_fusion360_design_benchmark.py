@@ -31,7 +31,7 @@ def build_benchmark_tables(repo_root: Path) -> tuple[pd.DataFrame, pd.DataFrame,
     state = build_wind_state(df)
     rotor = simulate_rotor_response(state)
     azimuth = compute_azimuthal_relative_velocity(state, rotor)
-    particles = simulate_particles(state, azimuth)
+    particles = simulate_particles(state, rotor, azimuth)
 
     operating_mask = state["u_total"] >= CUT_IN_MS
     operating_hours = int(np.count_nonzero(operating_mask))
