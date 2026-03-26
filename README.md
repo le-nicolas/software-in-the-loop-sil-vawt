@@ -1,17 +1,17 @@
 # Software-in-the-Loop VAWT
 
 ![Status](https://img.shields.io/badge/status-active_research-0f766e)
-![Stage](https://img.shields.io/badge/stage-early_SIL_scaffold-1d4ed8)
+![Stage](https://img.shields.io/badge/stage-viz9_%2B_Unity_scaffold-1d4ed8)
 ![Location](https://img.shields.io/badge/site-Cagayan_de_Oro,_PH-475569)
 
-Transparent wind-resource analysis, spatial wind-field modeling, visualization, and early software-in-the-loop work for a vertical-axis wind turbine feasibility study in Cagayan de Oro, Philippines.
+Transparent wind-resource analysis, spatial wind-field modeling, visualization, DPCBF-inspired capture diagnostics, and early software-in-the-loop work for a vertical-axis wind turbine feasibility study in Cagayan de Oro, Philippines.
 
 ## Research Status
 
 This repository is under active research and remains a working engineering notebook as well as a codebase.
 
-- stable foundation: hourly 2023 CDO wind dataset, derived height columns, spatial analysis utilities, reproducible plots, and an early SIL loop
-- still in-progress: controller fidelity, plant physics, terrain correction quality, and validation depth
+- stable foundation: hourly 2023 CDO wind dataset, derived height columns, spatial analysis utilities, reproducible plots, `viz9` capture-sphere diagnostics, and an early SIL loop
+- still in-progress: controller fidelity, plant physics, terrain correction quality, validation depth, and the Unity scene integration layer
 - not yet claimed: bankable resource assessment, final micrositing accuracy, or full digital-twin realism
 
 If you are viewing this from GitHub, the intended repo description is:
@@ -24,7 +24,9 @@ If you are viewing this from GitHub, the intended repo description is:
 - height-derived wind columns and atmospheric metrics
 - spatial wind-field builders using hybrid and refined workflows
 - interactive Plotly and Dash visualizations
+- a DPCBF-inspired 3D capture-sphere viewer for Savonius vs Darrieus regime insight
 - early software-in-the-loop controller and plant scaffolding
+- a Unity-ready runtime scaffold for native 3D exploration
 - validation-source fetches and supporting raw reference files
 
 ## Transparency Notes
@@ -35,6 +37,7 @@ This project is intentionally transparent about what each dataset or model can a
 - Open-Meteo ERA5-Seamless is used for refined spatial-pattern exploration
 - some files are evidence-building validation inputs, not final truth sources
 - current SIL controller and plant dynamics are placeholders for research iteration
+- the Unity folder is a scaffold, not yet a fully generated Unity project with scenes and materials committed
 - rebuildable outputs are separated from the master dataset so the core source stays clean
 
 ## Core Dataset
@@ -123,6 +126,13 @@ Not sufficient for:
 - CFD-grade local flow distortion conclusions
 - design signoff without calibration against measurements
 
+## New In This Repo State
+
+- `viz9_dpcbf_sphere_3d.py` adds a 3D wind-particle capture sphere with CBF-inspired alert logic
+- the new viewer compares inner Savonius drag behavior against outer Darrieus lift behavior
+- `UnityVAWT/` adds a 12-script Unity scaffold using `StreamingAssets` runtime CSV loading and URP-oriented scene structure
+- the Unity scaffold is designed to reproduce the engineering meaning of `viz9`, not just its appearance
+
 ## Main Files
 
 ### Data build and analysis
@@ -153,11 +163,24 @@ Not sufficient for:
 - `viz7_dash_spatial.py`
 - `viz7_spatial_field_slider.py`
 - `viz8_wpd_spatial_slider.py`
+- `viz9_dpcbf_sphere_3d.py`
 
 Primary interactive apps:
 
 - `viz7_spatial_field_slider.py`
 - `viz8_wpd_spatial_slider.py`
+- `viz9_dpcbf_sphere_3d.py`
+
+### Unity conversion scaffold
+
+- `UnityVAWT/README.md`: setup notes for a fresh Unity `2022 LTS` `URP` project
+- `UnityVAWT/Assets/StreamingAssets/CDO_wind_2023_hourly.csv`: runtime CSV source for Unity
+- `UnityVAWT/Assets/Scripts/Data/WindDataLoader.cs`: `UnityWebRequest` CSV loading
+- `UnityVAWT/Assets/Scripts/Physics/`: decomposition, rotor state, and CBF monitoring
+- `UnityVAWT/Assets/Scripts/Scene/`: sphere zones, particles, and rotor mesh
+- `UnityVAWT/Assets/Scripts/UI/`: HUD graphs and directional histogram
+- `UnityVAWT/Assets/Scripts/Camera/`: orbit camera and timeline playback
+- `UnityVAWT/Assets/Scripts/Controls/`: live parameter slider bindings
 
 ### Early SIL scaffold
 
@@ -199,6 +222,18 @@ python viz7_spatial_field_slider.py
 python viz8_wpd_spatial_slider.py
 ```
 
+Run the DPCBF-inspired capture-sphere viewer:
+
+```bash
+python viz9_dpcbf_sphere_3d.py
+```
+
+For Unity work:
+
+```bash
+see UnityVAWT/README.md
+```
+
 ## Tracked vs Generated
 
 Tracked:
@@ -207,6 +242,7 @@ Tracked:
 - constants
 - master dataset
 - lightweight templates
+- Unity conversion scaffold source
 - raw validation-reference inputs used for transparency and reproducibility
 
 Ignored:
@@ -222,4 +258,5 @@ Ignored:
 - add sensor models and fault scenarios
 - tighten validation against local or nearby measurements
 - improve terrain, roughness, and coastline corrections
+- turn the Unity scaffold into a fully wired Unity project scene with materials, prefabs, and UI assets
 - mature the workflow from early SIL scaffold toward a stronger research test harness
