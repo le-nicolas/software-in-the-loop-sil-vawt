@@ -20,18 +20,18 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from CDO_project_constants import (
+    CP_GENERIC,
+    CUT_IN_MS,
+    DRIVETRAIN_DAMPING_NMS,
+    ROTOR_INERTIA_KGM2,
+    ROTOR_RADIUS_M,
+    STANDARD_AIR_DENSITY,
+    SWEPT_AREA_M2,
+    TSR_OPT,
+    TSR_SPREAD,
+)
 from sil_plant_model import cp_curve
-
-
-ROTOR_RADIUS_M = 0.75
-SWEPT_AREA_M2 = 4.0
-TSR_OPT = 2.2
-TSR_SPREAD = 1.6
-CP_GENERIC = 0.35
-CUT_IN_MS = 2.5
-ROTOR_INERTIA_KGM2 = 12.0
-DRIVETRAIN_DAMPING_NMS = 0.08
-STANDARD_AIR_DENSITY = 1.225
 
 ALPHA_CBF = 0.3
 DT_DATA_S = 3600.0
@@ -290,7 +290,7 @@ def print_summary(
         "Estimated annual energy (MWh): "
         f"{annual_energy_mwh:.2f}"
     )
-    print("(assuming SWEPT_AREA_M2=4.0, CP_GENERIC=0.35, continuous operation)")
+    print(f"(assuming SWEPT_AREA_M2={SWEPT_AREA_M2:.1f}, CP_GENERIC={CP_GENERIC:.2f}, continuous operation)")
 
 
 def export_sphere_metrics(

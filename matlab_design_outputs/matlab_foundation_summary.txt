@@ -6,43 +6,43 @@ operating_hours_2023: 6739.000000 hours | MATLAB recomputed from viz10 hourly ex
 wind_operating_p50_ms: 3.957199 m/s | MATLAB percentile
 wind_operating_p75_ms: 4.896191 m/s | MATLAB percentile
 wind_operating_p90_ms: 6.037624 m/s | MATLAB percentile
-rotor_rpm_p50: 98.169969 rpm | MATLAB percentile
-rotor_rpm_p75: 156.570417 rpm | MATLAB percentile
+rotor_rpm_p50: 120.626076 rpm | MATLAB percentile
+rotor_rpm_p75: 154.287734 rpm | MATLAB percentile
 rotor_rpm_p90: 220.000000 rpm | MATLAB percentile
-omega_rad_s_p50: 10.280335 rad/s | MATLAB percentile
+omega_rad_s_p50: 12.631933 rad/s | MATLAB percentile
 omega_rad_s_p90: 23.038346 rad/s | MATLAB percentile
-aero_torque_nm_p50: 3.987551 N*m | MATLAB percentile
-aero_torque_nm_p90: 7.301587 N*m | Design structural load case
-aero_torque_nm_p95: 9.696647 N*m | Peak structural load case
-cp_operating_p50: 0.233966 - | MATLAB percentile
-cp_operating_p90: 0.298902 - | MATLAB percentile
-capture_fraction_p10: 0.477778 - | Lower-tail capture robustness
+aero_torque_nm_p50: 3.142777 N*m | MATLAB percentile
+aero_torque_nm_p90: 7.300621 N*m | Design structural load case
+aero_torque_nm_p95: 9.314435 N*m | Peak structural load case
+cp_operating_p50: 0.296322 - | MATLAB percentile
+cp_operating_p90: 0.299966 - | MATLAB percentile
+capture_fraction_p10: 0.466667 - | Lower-tail capture robustness
 capture_fraction_p50: 1.000000 - | Median capture robustness
 capture_fraction_p90: 1.000000 - | Upper-tail capture robustness
-mean_h_p10: 1.567524 - | Lower-tail DPCBF mean h
-mean_h_p50: 8.811282 - | Median DPCBF mean h
-mean_h_p90: 20.788109 - | Upper-tail DPCBF mean h
-dominant_peak_sector_deg: 205.000000 deg | Imported annual azimuth benchmark
+mean_h_p10: 1.117800 - | Lower-tail DPCBF mean h
+mean_h_p50: 11.256454 - | Median DPCBF mean h
+mean_h_p90: 19.420238 - | Upper-tail DPCBF mean h
+dominant_peak_sector_deg: 210.000000 deg | Imported annual azimuth benchmark
 design_tip_speed_p90_ms: 17.278760 m/s | MATLAB percentile
 design_tip_speed_p95_ms: 17.278760 m/s | MATLAB percentile
-recommended_nominal_rpm: 98.169969 rpm | Imported Fusion360 baseline
-recommended_design_torque_nm: 7.301341 N*m | Imported Fusion360 baseline
-recommended_peak_torque_nm: 9.693339 N*m | Imported Fusion360 baseline
+recommended_nominal_rpm: 120.626076 rpm | Imported Fusion360 baseline
+recommended_design_torque_nm: 7.300024 N*m | Imported Fusion360 baseline
+recommended_peak_torque_nm: 9.313257 N*m | Imported Fusion360 baseline
 mean_air_density_kgm3: 1.113779 kg/m^3 | Raw 2023 dataset mean
 mean_wind_15m_ms: 3.643344 m/s | Raw 2023 dataset mean
 peak_hourly_wind_15m_ms: 15.289952 m/s | Raw 2023 dataset max
 
 === Seasonal Summary ===
-Amihan | mean wind 4.155 m/s | mean rpm 94.025 | mean torque 4.699 N*m | capture 0.824 | mean h 9.789
-Transition_DryDown | mean wind 3.669 m/s | mean rpm 93.597 | mean torque 3.688 N*m | capture 0.850 | mean h 9.396
-Habagat | mean wind 3.333 m/s | mean rpm 99.605 | mean torque 3.258 N*m | capture 0.883 | mean h 9.816
-Transition_Rampup | mean wind 2.806 m/s | mean rpm 85.263 | mean torque 2.354 N*m | capture 0.895 | mean h 8.370
+Amihan | mean wind 4.155 m/s | mean rpm 88.820 | mean torque 4.022 N*m | capture 0.806 | mean h 9.334
+Transition_DryDown | mean wind 3.669 m/s | mean rpm 103.239 | mean torque 3.189 N*m | capture 0.852 | mean h 10.274
+Habagat | mean wind 3.333 m/s | mean rpm 113.110 | mean torque 2.713 N*m | capture 0.889 | mean h 10.898
+Transition_Rampup | mean wind 2.806 m/s | mean rpm 90.922 | mean torque 1.959 N*m | capture 0.897 | mean h 8.900
 
 === Load Cases ===
-cut_in_edge | hour 3793 | U=2.500 m/s | rpm=54.049 | torque=1.681 N*m | capture=0.933 | mean h=5.661
-typical_operating | hour 6516 | U=3.957 m/s | rpm=130.551 | torque=4.438 N*m | capture=1.000 | mean h=9.758
-design_operating | hour 8534 | U=6.037 m/s | rpm=220.000 | torque=7.255 N*m | capture=0.944 | mean h=30.276
-upper_speed_case | hour 1476 | U=6.809 m/s | rpm=220.000 | torque=9.678 N*m | capture=1.000 | mean h=12.943
+cut_in_edge | hour 3793 | U=2.500 m/s | rpm=95.501 | torque=1.256 N*m | capture=0.978 | mean h=8.842
+typical_operating | hour 6516 | U=3.957 m/s | rpm=151.153 | torque=3.115 N*m | capture=1.000 | mean h=14.731
+design_operating | hour 8534 | U=6.037 m/s | rpm=220.000 | torque=7.255 N*m | capture=0.911 | mean h=29.831
+upper_speed_case | hour 1476 | U=6.809 m/s | rpm=220.000 | torque=9.299 N*m | capture=1.000 | mean h=12.815
 
 === Toolbox Inventory ===
 curveFitting: 1

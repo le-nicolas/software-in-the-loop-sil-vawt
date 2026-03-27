@@ -199,18 +199,19 @@ Primary interactive apps:
 
 ### Current MATLAB foundation numbers
 
+- current conservative hybrid assumptions: `CP_GENERIC=0.30`, `TSR_OPT=3.0`, `TSR_SPREAD=1.1`, with an asymmetric Cp(TSR) curve
 - rotor radius: `0.750 m`
 - rotor diameter: `1.500 m`
 - swept-area-equivalent rotor height: `2.667 m`
 - operating hours in 2023: `6739`
 - operating wind `P50`: `3.957 m/s`
 - operating wind `P90`: `6.038 m/s`
-- rotor speed `P50`: `98.17 rpm`
+- rotor speed `P50`: `120.63 rpm`
 - rotor speed `P90`: `220 rpm`
 - aero torque `P90`: `7.301 N*m`
-- aero torque `P95`: `9.697 N*m`
+- aero torque `P95`: `9.314 N*m`
 - capture fraction `P50`: `1.000`
-- dominant peak sector: `205 deg`
+- dominant peak sector: `210 deg`
 
 ### Unity conversion scaffold
 

@@ -61,8 +61,10 @@ ALPHA_TEXTBOOK = 0.18
 SWEPT_AREA_M2 = 4.0
 # PLACEHOLDER — update when design locked
 
-CP_GENERIC = 0.35
-# PLACEHOLDER — update when design locked
+CP_GENERIC = 0.30
+# Conservative hybrid baseline.
+# More honest than 0.35 for early
+# Savonius-Darrieus feasibility work.
 
 TURBINE_RATED_KW = 1.0
 # PLACEHOLDER — update when design locked
@@ -86,11 +88,14 @@ GENERATOR_EFFICIENCY = 0.9
 BRAKE_TORQUE_NM = 18.0
 # PLACEHOLDER — update when design locked
 
-TSR_OPT = 2.2
-# PLACEHOLDER — update when design locked
+TSR_OPT = 3.0
+# Conservative hybrid optimum.
+# Moved upward from the earlier
+# Savonius-leaning placeholder.
 
-TSR_SPREAD = 1.6
-# PLACEHOLDER — update when design locked
+TSR_SPREAD = 1.1
+# Width parameter for the
+# asymmetric Cp(TSR) curve.
 
 CUT_IN_MS = 2.5
 # PLACEHOLDER — update when design locked

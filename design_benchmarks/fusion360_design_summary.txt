@@ -5,11 +5,11 @@ Rotor height from swept area: 2.667 m
 Operating hours in 2023: 6739
 Nominal operating wind: 3.957 m/s
 Design operating wind (P90): 6.037 m/s
-Nominal rotor speed: 98.17 rpm
+Nominal rotor speed: 120.63 rpm
 Upper rotor speed (P90): 220.00 rpm
-Design aero torque (P90): 7.301 N*m
-Peak aero torque (P95): 9.693 N*m
-Peak azimuth sector: 205.0 deg
-Lower-tail capture fraction (P10): 0.478
+Design aero torque (P90): 7.300 N*m
+Peak aero torque (P95): 9.313 N*m
+Peak azimuth sector: 210.0 deg
+Lower-tail capture fraction (P10): 0.467
 Median capture fraction: 1.000
 Use the load-case table for Fusion360 motion studies, interference envelopes, and first-pass structural load conditions.

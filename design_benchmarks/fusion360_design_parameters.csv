@@ -9,30 +9,30 @@ wind_operating_p50_ms,3.9571988586048303,m/s,Operating-hour percentile
 wind_operating_p75_ms,4.89591343778746,m/s,Operating-hour percentile
 wind_operating_p90_ms,6.037087315932434,m/s,Operating-hour percentile
 wind_operating_p95_ms,6.809352589504574,m/s,Operating-hour percentile
-rotor_rpm_p50,98.16996870017242,rpm,Operating-hour percentile
+rotor_rpm_p50,120.62607584623176,rpm,Operating-hour percentile
 rotor_rpm_p90,220.0,rpm,Operating-hour percentile
 rotor_rpm_p95,220.0,rpm,Operating-hour percentile
-omega_rad_s_p50,10.28033508238672,rad/s,Operating-hour percentile
+omega_rad_s_p50,12.631933123662895,rad/s,Operating-hour percentile
 omega_rad_s_p90,23.038346126325152,rad/s,Operating-hour percentile
-aero_torque_nm_p50,3.9875513037767356,N*m,Operating-hour percentile
-aero_torque_nm_p90,7.301340943667383,N*m,Design-load proxy
-aero_torque_nm_p95,9.693339090071685,N*m,Peak-load proxy
-cp_operating_p50,0.23396581620514975,-,Operating-hour percentile
-cp_operating_p90,0.29889333252936195,-,Operating-hour percentile
-vrel_ring_mean_p50_ms,8.077802141539953,m/s,Mean azimuthal relative speed
-vrel_ring_mean_p90_ms,17.616322426607564,m/s,Mean azimuthal relative speed
-vrel_ring_peak_p95_ms,23.215705188026448,m/s,Peak azimuthal relative speed
-capture_fraction_p10,0.4777777777777778,-,Lower-tail monthly capture proxy
+aero_torque_nm_p50,3.1427767967798803,N*m,Operating-hour percentile
+aero_torque_nm_p90,7.300024091475056,N*m,Design-load proxy
+aero_torque_nm_p95,9.313256792742777,N*m,Peak-load proxy
+cp_operating_p50,0.29632204993599637,-,Operating-hour percentile
+cp_operating_p90,0.299966343849017,-,Operating-hour percentile
+vrel_ring_mean_p50_ms,9.744292373893817,m/s,Mean azimuthal relative speed
+vrel_ring_mean_p90_ms,17.565464631059974,m/s,Mean azimuthal relative speed
+vrel_ring_peak_p95_ms,22.776235520794636,m/s,Peak azimuthal relative speed
+capture_fraction_p10,0.4666666666666667,-,Lower-tail monthly capture proxy
 capture_fraction_p50,1.0,-,Median monthly capture proxy
 capture_fraction_p90,1.0,-,Upper-tail monthly capture proxy
-mean_h_p10,1.5677094445178017,-,Lower-tail DPCBF mean h
-mean_h_p50,8.811282080487258,-,Median DPCBF mean h
-mean_h_p90,20.787927887758094,-,Upper-tail DPCBF mean h
-dominant_peak_sector_deg,205.0,deg,Annual max-mean azimuth sector
-recommended_nominal_tsr,2.2,-,Use as Fusion360 motion baseline
-recommended_nominal_rpm,98.16996870017242,rpm,Nominal CAD animation / design case
+mean_h_p10,1.1178215833129699,-,Lower-tail DPCBF mean h
+mean_h_p50,11.256454154950875,-,Median DPCBF mean h
+mean_h_p90,19.416562913675865,-,Upper-tail DPCBF mean h
+dominant_peak_sector_deg,210.0,deg,Annual max-mean azimuth sector
+recommended_nominal_tsr,3.0,-,Use as Fusion360 motion baseline
+recommended_nominal_rpm,120.62607584623176,rpm,Nominal CAD animation / design case
 recommended_upper_rpm,220.0,rpm,Upper operating CAD animation case
-recommended_design_torque_nm,7.301340943667383,N*m,Design structural load case
-recommended_peak_torque_nm,9.693339090071685,N*m,Peak structural load case
-recommended_nominal_tip_speed_ms,7.71025131179004,m/s,Blade-tip speed baseline
+recommended_design_torque_nm,7.300024091475056,N*m,Design structural load case
+recommended_peak_torque_nm,9.313256792742777,N*m,Peak structural load case
+recommended_nominal_tip_speed_ms,9.473949842747171,m/s,Blade-tip speed baseline
 recommended_upper_tip_speed_ms,17.278759594743864,m/s,Blade-tip speed upper case
