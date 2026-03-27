@@ -61,7 +61,7 @@ ALPHA_TEXTBOOK = 0.18
 SWEPT_AREA_M2 = 4.0
 # PLACEHOLDER — update when design locked
 
-CP_GENERIC = 0.30
+CP_GENERIC = 0.33  # source: [Irawan 2023] [10.21926/jept.2301001]
 # Conservative hybrid baseline.
 # More honest than 0.35 for early
 # Savonius-Darrieus feasibility work.
@@ -88,12 +88,12 @@ GENERATOR_EFFICIENCY = 0.9
 BRAKE_TORQUE_NM = 18.0
 # PLACEHOLDER — update when design locked
 
-TSR_OPT = 3.0
+TSR_OPT = 2.5  # source: [Irawan 2023] [10.21926/jept.2301001]
 # Conservative hybrid optimum.
 # Moved upward from the earlier
 # Savonius-leaning placeholder.
 
-TSR_SPREAD = 1.1
+TSR_SPREAD = 1.85  # source: [Irawan 2023] [10.21926/jept.2301001]
 # Width parameter for the
 # asymmetric Cp(TSR) curve.
 

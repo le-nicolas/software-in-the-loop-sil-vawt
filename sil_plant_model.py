@@ -5,7 +5,6 @@ from dataclasses import dataclass
 import numpy as np
 
 from CDO_project_constants import (
-    CP_GENERIC,
     DRIVETRAIN_DAMPING_NMS,
     GENERATOR_EFFICIENCY,
     MAX_ROTOR_RPM,
@@ -14,7 +13,6 @@ from CDO_project_constants import (
     STARTUP_TORQUE_COEFF,
     SWEPT_AREA_M2,
     TSR_OPT,
-    TSR_SPREAD,
     TURBINE_RATED_KW,
 )
 from sil_controller import ControllerCommand
@@ -42,18 +40,28 @@ class PlantOutputs:
     spatial_asymmetry_index: float
 
 
+TSR_CP_LOOKUP = np.array(
+    [
+        (0.0, 0.00),
+        (0.1, 0.03),
+        (0.3, 0.05),
+        (0.5, 0.07),
+        (0.8, 0.12),
+        (1.0, 0.16),
+        (1.5, 0.20),
+        (2.0, 0.28),
+        (2.5, 0.33),
+        (3.0, 0.28),
+        (3.5, 0.15),
+        (4.0, 0.00),
+    ],
+    dtype=float,
+)
+
+
 def cp_curve(tsr: float) -> float:
     tsr_array = np.asarray(tsr, dtype=float)
-    deviation = (tsr_array - TSR_OPT) / max(TSR_SPREAD, 1e-6)
-    response = np.empty_like(deviation, dtype=float)
-
-    low_side = deviation <= 0.0
-    response[low_side] = 1.0 - 0.55 * deviation[low_side] ** 2
-
-    high_deviation = deviation[~low_side]
-    response[~low_side] = 1.0 - 1.25 * high_deviation**2 - 0.35 * high_deviation**3
-
-    cp = CP_GENERIC * np.clip(response, 0.0, None)
+    cp = np.interp(tsr_array, TSR_CP_LOOKUP[:, 0], TSR_CP_LOOKUP[:, 1], left=0.0, right=0.0)
     if np.ndim(cp) == 0:
         return float(cp)
     return cp

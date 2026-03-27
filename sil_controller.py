@@ -60,12 +60,16 @@ class SimpleVAWTController:
         tsr_measured = max(0.0, float(sensors.tip_speed_ratio))
         cp_measured = max(0.0, float(sensors.cp_effective))
         aero_torque_measured = max(0.0, float(sensors.aerodynamic_torque_nm))
+        startup_rpm_handoff = 8.0
+        startup_tsr_handoff = 0.25
+        startup_cp_floor = 0.02
+        brake_tsr_trigger = max(TSR_OPT + 0.75, 3.25)
 
         if wind_speed < CUT_IN_MS:
             self.reset()
             return ControllerCommand(generator_torque_nm=0.0, brake_torque_nm=0.0, mode="idle")
 
-        if wind_speed >= CUT_OUT_MS or rotor_rpm >= MAX_ROTOR_RPM:
+        if wind_speed >= CUT_OUT_MS or (rotor_rpm >= MAX_ROTOR_RPM and tsr_measured >= brake_tsr_trigger):
             self.reset()
             return ControllerCommand(generator_torque_nm=0.0, brake_torque_nm=BRAKE_TORQUE_NM, mode="brake")
 
@@ -94,8 +98,8 @@ class SimpleVAWTController:
             rated_torque = self._max_rated_power_w / max(omega * GENERATOR_EFFICIENCY, 1e-6)
             torque = min(torque, rated_torque)
 
-        # Give startup some assist by keeping generator unloaded at very low speed.
-        if rotor_rpm < 20.0 or (cp_measured < 0.03 and tsr_measured < 0.5):
+        # Hand off to MPPT as soon as the rotor shows useful low-TSR capture.
+        if rotor_rpm < startup_rpm_handoff and tsr_measured < startup_tsr_handoff and cp_measured < startup_cp_floor:
             torque = 0.0
             mode = "startup"
         else:
