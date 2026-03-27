@@ -10,7 +10,7 @@ Transparent wind-resource analysis, spatial wind-field modeling, visualization, 
 
 This repository is under active research and remains a working engineering notebook as well as a codebase.
 
-- stable foundation: hourly 2023 CDO wind dataset, derived height columns, spatial analysis utilities, reproducible plots, `viz9` and `viz10` DPCBF diagnostics, exported sphere metrics, Fusion360 load benchmarks, a MATLAB design-foundation workflow, and an adaptive SIL loop with Cp feedback and corrected power accounting
+- stable foundation: hourly 2023 CDO wind dataset, derived height columns, spatial analysis utilities, reproducible plots, `viz9` and `viz10` DPCBF diagnostics, exported sphere metrics, Fusion360 load benchmarks, a MATLAB design-foundation workflow, and an adaptive SIL loop with lookup-table Cp(TSR), corrected power accounting, and improved startup-to-MPPT handoff
 - still in-progress: controller fidelity, plant physics, terrain correction quality, validation depth, and the Unity scene integration layer
 - not yet claimed: bankable resource assessment, final micrositing accuracy, or full digital-twin realism
 
@@ -38,7 +38,7 @@ This project is intentionally transparent about what each dataset or model can a
 - NASA POWER is the base hourly series for the master dataset
 - Open-Meteo ERA5-Seamless is used for refined spatial-pattern exploration
 - some files are evidence-building validation inputs, not final truth sources
-- current SIL controller and plant dynamics are still research models, but they now include adaptive Cp feedback, an asymmetric Cp curve, ring-resolved inflow preservation, and explicit hourly energy accounting
+- current SIL controller and plant dynamics are still research models, but they now include adaptive Cp feedback, a literature-anchored lookup-table Cp(TSR), ring-resolved inflow preservation, startup-zone controller tuning, and explicit hourly energy accounting
 - the Unity folder is a scaffold, not yet a fully generated Unity project with scenes and materials committed
 - rebuildable outputs are separated from the master dataset so the core source stays clean
 
@@ -135,7 +135,7 @@ Not sufficient for:
 - exported sphere and particle CSVs now make the capture logic inspectable outside the HTML viewers
 - `build_fusion360_design_benchmark.py` and `design_benchmarks/` turn the simulation outputs into first-pass CAD load cases
 - `matlab_design_foundation_benchmark.m` converts the benchmark stack into MATLAB-native tables, figures, workspace data, and toolbox-aware follow-on artifacts
-- `sil_controller.py`, `sil_plant_model.py`, and `run_sil_simulation.py` now preserve Cp feedback, use an asymmetric Cp curve, keep ring-resolved inflow structure, and separate hourly energy from mean power
+- `sil_controller.py`, `sil_plant_model.py`, and `run_sil_simulation.py` now preserve Cp feedback, use a lookup-table Cp(TSR) model, keep ring-resolved inflow structure, lower the startup-to-MPPT handoff threshold, review overspeed braking more conservatively, and separate hourly energy from mean power
 - `UnityVAWT/` adds a 12-script Unity scaffold using `StreamingAssets` runtime CSV loading and URP-oriented scene structure
 - the Unity scaffold is designed to reproduce the engineering meaning of `viz9`, not just its appearance
 
@@ -199,7 +199,7 @@ Primary interactive apps:
 
 ### Current MATLAB foundation numbers
 
-- current conservative hybrid assumptions: `CP_GENERIC=0.30`, `TSR_OPT=3.0`, `TSR_SPREAD=1.1`, with an asymmetric Cp(TSR) curve
+- current conservative hybrid assumptions: `CP_GENERIC=0.33`, `TSR_OPT=2.5`, `TSR_SPREAD=1.85`, with a lookup-table Cp(TSR) shape anchored to low-wind hybrid Savonius-Darrieus literature
 - rotor radius: `0.750 m`
 - rotor diameter: `1.500 m`
 - swept-area-equivalent rotor height: `2.667 m`
@@ -226,8 +226,8 @@ Primary interactive apps:
 
 ### Early SIL scaffold
 
-- `sil_controller.py`: adaptive TSR-tracking torque control using plant Cp and aerodynamic-torque feedback
-- `sil_plant_model.py`: VAWT plant model with asymmetric Cp, startup torque support, damping, and optional ring-resolved inflow asymmetry
+- `sil_controller.py`: adaptive TSR-tracking torque control using plant Cp and aerodynamic-torque feedback, with an earlier startup-to-MPPT handoff and a less trigger-happy brake condition
+- `sil_plant_model.py`: VAWT plant model with lookup-table Cp(TSR), startup torque support, damping, and optional ring-resolved inflow asymmetry
 - `run_sil_simulation.py`: year-scale closed-loop simulation using blended spatial forcing with preserved ring-level inflow structure and explicit hourly energy accounting
 
 ## Current SIL Loop
@@ -236,8 +236,26 @@ Primary interactive apps:
 2. The disturbed 25-point field is reconstructed into a ring-resolved rotor inflow instead of collapsing direction immediately to one scalar.
 3. The controller reads simulated wind, rotor speed, previous Cp, previous TSR, and previous aerodynamic torque.
 4. The controller issues adaptive generator torque and brake commands.
-5. The plant advances rotor state using an asymmetric Cp curve and optional azimuthal inflow asymmetry.
+5. The plant advances rotor state using a lookup-table Cp(TSR) model and optional azimuthal inflow asymmetry.
 6. Hourly outputs log both mean power and hourly energy, along with upwind/downwind face statistics.
+
+### Current SIL Snapshot
+
+- latest 2023 closed-loop run: `294.219 kWh/year`
+- average daily yield from the current SIL run: `806 Wh/day`
+- hours generating: `5779`
+- mean effective wind speed: `3.724 m/s`
+- mean rotor RPM: `116.64 rpm`
+- peak modeled electrical power: `1.000 kW` at the current rated-power cap
+- working-range hours (`2.5-7.0 m/s`) with zero electrical output: `249`
+- working-range hours with output below `0.001 kW`: `415`
+- working-range control-mode split: `adaptive_mppt=5035`, `startup=232`, `brake=171`
+
+Interpretation:
+
+- the lookup-table Cp(TSR) and controller retune materially reduced startup-zone under-harvesting
+- the remaining gap is no longer dominated by a zero-Cp startup model
+- the present SIL result should still be treated as a research output, not a bankable yield claim
 
 ## Project Rules
 
@@ -310,8 +328,8 @@ Ignored:
 
 ## What Comes Next
 
-- replace placeholder aerodynamics with a better VAWT performance representation
-- deepen controller logic and state handling
+- validate and refine the new lookup-table Cp(TSR) representation against more primary-source hybrid curves
+- deepen controller logic and state handling beyond the current startup and overspeed retune
 - add sensor models and fault scenarios
 - tighten validation against local or nearby measurements
 - improve terrain, roughness, and coastline corrections
