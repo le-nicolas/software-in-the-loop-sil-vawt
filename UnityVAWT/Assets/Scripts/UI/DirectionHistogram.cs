@@ -13,7 +13,7 @@ namespace CDO.VAWT.Unity
 
         private void Reset()
         {
-            decomposer = FindObjectOfType<WindDecomposer>();
+            decomposer = FindFirstObjectByType<WindDecomposer>();
         }
 
         private void OnEnable()

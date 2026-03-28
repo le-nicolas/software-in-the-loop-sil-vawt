@@ -3,3 +3,4 @@ Logs/
 Temp/
 UserSettings/
 unity_batch.log
+unity_*.log

@@ -4,6 +4,9 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/VAWTScene.unity
+    guid: 531e8b21a1ad7754d8f982741a9547e0
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

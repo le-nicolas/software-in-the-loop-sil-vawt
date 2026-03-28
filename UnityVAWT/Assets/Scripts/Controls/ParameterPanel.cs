@@ -27,9 +27,9 @@ namespace CDO.VAWT.Unity
 
         private void Reset()
         {
-            decomposer = FindObjectOfType<WindDecomposer>();
-            cbfMonitor = FindObjectOfType<CBFMonitor>();
-            timelineSlider = FindObjectOfType<TimelineSlider>();
+            decomposer = FindFirstObjectByType<WindDecomposer>();
+            cbfMonitor = FindFirstObjectByType<CBFMonitor>();
+            timelineSlider = FindFirstObjectByType<TimelineSlider>();
         }
 
         private void Start()

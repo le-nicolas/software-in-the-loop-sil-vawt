@@ -27,11 +27,11 @@ namespace CDO.VAWT.Unity
 
         private void Reset()
         {
-            decomposer = FindObjectOfType<WindDecomposer>();
-            cbfMonitor = FindObjectOfType<CBFMonitor>();
-            particles = FindObjectOfType<VAWTParticles>();
-            rotorPhysics = FindObjectOfType<RotorPhysics>();
-            timelineSlider = FindObjectOfType<TimelineSlider>();
+            decomposer = FindFirstObjectByType<WindDecomposer>();
+            cbfMonitor = FindFirstObjectByType<CBFMonitor>();
+            particles = FindFirstObjectByType<VAWTParticles>();
+            rotorPhysics = FindFirstObjectByType<RotorPhysics>();
+            timelineSlider = FindFirstObjectByType<TimelineSlider>();
         }
 
         private void OnEnable()

@@ -41,14 +41,14 @@ namespace CDO.VAWT.Unity
 
         private void Reset()
         {
-            decomposer = FindObjectOfType<WindDecomposer>();
+            decomposer = FindFirstObjectByType<WindDecomposer>();
         }
 
         private void OnEnable()
         {
             if (decomposer == null)
             {
-                decomposer = FindObjectOfType<WindDecomposer>();
+                decomposer = FindFirstObjectByType<WindDecomposer>();
             }
 
             if (decomposer != null)

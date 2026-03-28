@@ -11,7 +11,7 @@ namespace CDO.VAWT.Unity
 
         private void Reset()
         {
-            decomposer = FindObjectOfType<WindDecomposer>();
+            decomposer = FindFirstObjectByType<WindDecomposer>();
         }
 
         private void Awake()
@@ -97,7 +97,16 @@ namespace CDO.VAWT.Unity
                 return;
             }
 
-            Shader shader = Shader.Find("Universal Render Pipeline/Lit");
+            Shader shader = FindPreferredShader(
+                "Universal Render Pipeline/Lit",
+                "Standard",
+                "Sprites/Default"
+            );
+            if (shader == null)
+            {
+                return;
+            }
+
             Material material = new Material(shader);
             if (material.HasProperty("_Surface"))
             {
@@ -115,6 +124,20 @@ namespace CDO.VAWT.Unity
             }
 
             renderer.sharedMaterial = material;
+        }
+
+        private static Shader FindPreferredShader(params string[] shaderNames)
+        {
+            for (int i = 0; i < shaderNames.Length; i++)
+            {
+                Shader shader = Shader.Find(shaderNames[i]);
+                if (shader != null)
+                {
+                    return shader;
+                }
+            }
+
+            return null;
         }
 
         private static void ClearChildren(Transform parent)

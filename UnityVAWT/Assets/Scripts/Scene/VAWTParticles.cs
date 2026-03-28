@@ -28,8 +28,8 @@ namespace CDO.VAWT.Unity
 
         private void Reset()
         {
-            decomposer = FindObjectOfType<WindDecomposer>();
-            timelineSlider = FindObjectOfType<TimelineSlider>();
+            decomposer = FindFirstObjectByType<WindDecomposer>();
+            timelineSlider = FindFirstObjectByType<TimelineSlider>();
             particleSystemComponent = GetComponent<ParticleSystem>();
         }
 
@@ -48,7 +48,7 @@ namespace CDO.VAWT.Unity
         {
             if (decomposer == null)
             {
-                decomposer = FindObjectOfType<WindDecomposer>();
+                decomposer = FindFirstObjectByType<WindDecomposer>();
             }
 
             if (decomposer != null)

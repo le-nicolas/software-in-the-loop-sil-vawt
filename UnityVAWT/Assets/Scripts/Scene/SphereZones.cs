@@ -17,9 +17,9 @@ namespace CDO.VAWT.Unity
 
         private void Reset()
         {
-            decomposer = FindObjectOfType<WindDecomposer>();
-            cbfMonitor = FindObjectOfType<CBFMonitor>();
-            timelineSlider = FindObjectOfType<TimelineSlider>();
+            decomposer = FindFirstObjectByType<WindDecomposer>();
+            cbfMonitor = FindFirstObjectByType<CBFMonitor>();
+            timelineSlider = FindFirstObjectByType<TimelineSlider>();
         }
 
         private void Awake()
@@ -99,7 +99,17 @@ namespace CDO.VAWT.Unity
 
         private static Material CreateTransparentMaterial(string materialName)
         {
-            Shader shader = Shader.Find("Universal Render Pipeline/Unlit");
+            Shader shader = FindPreferredShader(
+                "Universal Render Pipeline/Unlit",
+                "Sprites/Default",
+                "Unlit/Color",
+                "Standard"
+            );
+            if (shader == null)
+            {
+                return null;
+            }
+
             Material material = new Material(shader) { name = materialName };
 
             if (material.HasProperty("_Surface"))
@@ -108,9 +118,21 @@ namespace CDO.VAWT.Unity
             }
 
             material.SetOverrideTag("RenderType", "Transparent");
-            material.SetInt("_SrcBlend", (int)BlendMode.SrcAlpha);
-            material.SetInt("_DstBlend", (int)BlendMode.OneMinusSrcAlpha);
-            material.SetInt("_ZWrite", 0);
+            if (material.HasProperty("_SrcBlend"))
+            {
+                material.SetInt("_SrcBlend", (int)BlendMode.SrcAlpha);
+            }
+
+            if (material.HasProperty("_DstBlend"))
+            {
+                material.SetInt("_DstBlend", (int)BlendMode.OneMinusSrcAlpha);
+            }
+
+            if (material.HasProperty("_ZWrite"))
+            {
+                material.SetInt("_ZWrite", 0);
+            }
+
             material.renderQueue = (int)RenderQueue.Transparent;
             return material;
         }
@@ -130,6 +152,20 @@ namespace CDO.VAWT.Unity
             {
                 material.SetColor("_Color", color);
             }
+        }
+
+        private static Shader FindPreferredShader(params string[] shaderNames)
+        {
+            for (int i = 0; i < shaderNames.Length; i++)
+            {
+                Shader shader = Shader.Find(shaderNames[i]);
+                if (shader != null)
+                {
+                    return shader;
+                }
+            }
+
+            return null;
         }
     }
 }

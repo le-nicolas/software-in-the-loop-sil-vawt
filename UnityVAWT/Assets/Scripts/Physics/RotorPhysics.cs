@@ -17,8 +17,8 @@ namespace CDO.VAWT.Unity
 
         private void Reset()
         {
-            decomposer = FindObjectOfType<WindDecomposer>();
-            timelineSlider = FindObjectOfType<TimelineSlider>();
+            decomposer = FindFirstObjectByType<WindDecomposer>();
+            timelineSlider = FindFirstObjectByType<TimelineSlider>();
         }
 
         private void Update()

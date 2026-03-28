@@ -99,14 +99,14 @@ namespace CDO.VAWT.Unity
 
         private void Reset()
         {
-            dataLoader = FindObjectOfType<WindDataLoader>();
+            dataLoader = FindFirstObjectByType<WindDataLoader>();
         }
 
         private void OnEnable()
         {
             if (dataLoader == null)
             {
-                dataLoader = FindObjectOfType<WindDataLoader>();
+                dataLoader = FindFirstObjectByType<WindDataLoader>();
             }
 
             if (dataLoader != null)
