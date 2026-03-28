@@ -13,6 +13,7 @@ from CDO_project_constants import (
     STARTUP_TORQUE_COEFF,
     SWEPT_AREA_M2,
     TSR_OPT,
+    TSR_CP_LOOKUP_DMST,
     TURBINE_RATED_KW,
 )
 from sil_controller import ControllerCommand
@@ -39,24 +40,7 @@ class PlantOutputs:
     azimuthal_speed_std_ms: float
     spatial_asymmetry_index: float
 
-
-TSR_CP_LOOKUP = np.array(
-    [
-        (0.0, 0.00),
-        (0.1, 0.03),
-        (0.3, 0.05),
-        (0.5, 0.07),
-        (0.8, 0.12),
-        (1.0, 0.16),
-        (1.5, 0.20),
-        (2.0, 0.28),
-        (2.5, 0.33),
-        (3.0, 0.28),
-        (3.5, 0.15),
-        (4.0, 0.00),
-    ],
-    dtype=float,
-)
+TSR_CP_LOOKUP = np.array(TSR_CP_LOOKUP_DMST, dtype=float)
 
 
 def cp_curve(tsr: float) -> float:

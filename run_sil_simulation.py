@@ -207,6 +207,7 @@ def run() -> pd.DataFrame:
         downwind_speed_samples: list[float] = []
         asymmetry_samples: list[float] = []
         mode_counts: dict[str, int] = {}
+        mode_sequence: list[str] = []
 
         for _ in range(SUBSTEPS_PER_HOUR):
             sensors = ControllerSensors(
@@ -241,6 +242,7 @@ def run() -> pd.DataFrame:
             downwind_speed_samples.append(outputs.downwind_face_speed_ms)
             asymmetry_samples.append(outputs.spatial_asymmetry_index)
             mode_counts[command.mode] = mode_counts.get(command.mode, 0) + 1
+            mode_sequence.append(command.mode)
 
         hourly_energy_kwh = power_integral_kwh
         mean_power_kw = hourly_energy_kwh / ((SECONDS_PER_SUBSTEP * SUBSTEPS_PER_HOUR) / 3600.0)
@@ -249,6 +251,7 @@ def run() -> pd.DataFrame:
             hours_generating += 1
 
         dominant_mode = max(mode_counts.items(), key=lambda item: item[1])[0]
+        mode_transitions_per_hour = sum(1 for prev, curr in zip(mode_sequence, mode_sequence[1:]) if prev != curr)
         records.append(
             {
                 "hour_of_year": idx + 1,
@@ -273,6 +276,7 @@ def run() -> pd.DataFrame:
                 "mean_cp_effective": float(np.mean(cp_samples)),
                 "mean_electrical_power_kw": float(np.mean(power_kw_samples)),
                 "control_mode": dominant_mode,
+                "mode_transitions_per_hour": mode_transitions_per_hour,
                 "forcing_label": forcing.forcing_label,
             }
         )
@@ -306,6 +310,7 @@ def write_summary(df: pd.DataFrame) -> None:
         f"Mean electrical power from substeps: {df['mean_electrical_power_kw'].mean():.6f} kW",
         f"Peak power: {df['mean_power_kw'].max():.6f} kW",
         f"Annual energy cross-check (sum hourly_energy_kwh): {df['hourly_energy_kwh'].sum():.6f}",
+        f"Mode transitions total: {int(df['mode_transitions_per_hour'].sum())}",
         "Mode counts:",
     ]
     for mode, count in df["control_mode"].value_counts().items():

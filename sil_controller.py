@@ -37,20 +37,54 @@ class ControllerCommand:
 
 class SimpleVAWTController:
     """
-    Minimal SIL controller scaffold.
+    SIL controller state machine for the CDO hybrid VAWT.
 
-    This is not production control software. It provides a non-trivial closed-loop
-    decision layer so plant and wind forcing can be exercised end-to-end.
+    States:
+    - idle: below cut-in wind speed; the controller resets and commands no torque.
+    - startup: rotor is accelerating but has not yet shown sustained usable TSR.
+    - adaptive_mppt: the rotor has entered the low-loss operating band and the
+      controller applies a softened torque law around TSR_OPT.
+    - brake: overspeed or cut-out protection; generator torque is removed and the
+      brake is applied.
+
+    Transition logic:
+    - idle -> startup when wind speed rises above CUT_IN_MS.
+    - startup -> adaptive_mppt only after TSR >= 0.30 for 3 consecutive control
+      timesteps. This hysteresis matches the CDO working range, where the rotor
+      often hovers near the startup band before settling into harvestable TSR.
+    - adaptive_mppt -> startup only after TSR < 0.20 for 3 consecutive timesteps.
+      This prevents gust-driven chattering when the rotor briefly dips below the
+      entry threshold and then recovers.
+    - any state -> brake when wind speed exceeds CUT_OUT_MS or rotor overspeed
+      protection is triggered.
+
+    Threshold rationale:
+    - The CDO site mean wind is 3.64 m/s and most hours sit in the 2.5-7 m/s
+      working band, so the controller must avoid zero-torque dead bands in the
+      0.2-0.3 TSR zone.
+    - The 0.30/0.20 hysteresis band is intentionally narrow enough to preserve
+      responsiveness while wide enough to suppress mode chatter.
+
+    Known limitations:
+    - This is still a SIL controller, not an embedded firmware implementation.
+    - It does not model converter current limits, thermal derating, or blade
+      pitch actuation.
+    - The torque law remains simplified and should be replaced with hardware
+      identification once generator and inverter data are available.
     """
 
     def __init__(self) -> None:
         self._max_rated_power_w = TURBINE_RATED_KW * 1000.0
         self._tsr_error_integral = 0.0
         self._last_torque_nm = 0.0
+        self._current_mode = "startup"
+        self._mode_hold_counter = 0
 
     def reset(self) -> None:
         self._tsr_error_integral = 0.0
         self._last_torque_nm = 0.0
+        self._current_mode = "startup"
+        self._mode_hold_counter = 0
 
     def command(self, sensors: ControllerSensors) -> ControllerCommand:
         wind_speed = float(sensors.wind_speed_ms)
@@ -61,7 +95,6 @@ class SimpleVAWTController:
         cp_measured = max(0.0, float(sensors.cp_effective))
         aero_torque_measured = max(0.0, float(sensors.aerodynamic_torque_nm))
         startup_rpm_handoff = 8.0
-        startup_tsr_handoff = 0.25
         startup_cp_floor = 0.02
         brake_tsr_trigger = max(TSR_OPT + 0.75, 3.25)
 
@@ -98,13 +131,29 @@ class SimpleVAWTController:
             rated_torque = self._max_rated_power_w / max(omega * GENERATOR_EFFICIENCY, 1e-6)
             torque = min(torque, rated_torque)
 
-        # Hand off to MPPT as soon as the rotor shows useful low-TSR capture.
-        if rotor_rpm < startup_rpm_handoff and tsr_measured < startup_tsr_handoff and cp_measured < startup_cp_floor:
+        if self._current_mode == "adaptive_mppt":
+            if tsr_measured < 0.20:
+                self._mode_hold_counter += 1
+                if self._mode_hold_counter >= 3:
+                    self._current_mode = "startup"
+                    self._mode_hold_counter = 0
+            else:
+                self._mode_hold_counter = 0
+        else:
+            if tsr_measured >= 0.30:
+                self._mode_hold_counter += 1
+                if self._mode_hold_counter >= 3:
+                    self._current_mode = "adaptive_mppt"
+                    self._mode_hold_counter = 0
+            else:
+                self._mode_hold_counter = 0
+
+        if self._current_mode == "startup" and tsr_measured < 0.20 and rotor_rpm < startup_rpm_handoff and cp_measured < startup_cp_floor:
             torque = 0.0
-            mode = "startup"
         else:
             torque = 0.65 * self._last_torque_nm + 0.35 * torque
-            mode = "adaptive_mppt"
+
+        mode = self._current_mode
 
         self._last_torque_nm = float(torque)
 

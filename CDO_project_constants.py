@@ -97,6 +97,38 @@ TSR_SPREAD = 1.85  # source: [Irawan 2023] [10.21926/jept.2301001]
 # Width parameter for the
 # asymmetric Cp(TSR) curve.
 
+TSR_CP_LOOKUP = [
+    (0.0, 0.00),
+    (0.1, 0.03),
+    (0.3, 0.05),
+    (0.5, 0.07),
+    (0.8, 0.12),
+    (1.0, 0.16),
+    (1.5, 0.20),
+    (2.0, 0.28),
+    (2.5, 0.33),
+    (3.0, 0.28),
+    (3.5, 0.15),
+    (4.0, 0.00),
+]
+# Baseline literature-fitted Cp(TSR) lookup
+# retained until DMST lookup is finalized.
+
+TSR_CP_LOOKUP_DMST = [
+    (0.3, 0.0310),
+    (0.5, 0.0714),
+    (0.8, 0.1370),
+    (1.0, 0.1720),
+    (1.5, 0.3014),
+    (2.0, 0.2969),
+    (2.5, 0.3273),
+    (3.0, 0.2476),
+    (3.5, 0.1176),
+    (4.0, 0.0434),
+]
+# DMST-inspired hybrid Cp(TSR) lookup
+# generated from the tuned azimuthal model.
+
 CUT_IN_MS = 2.5
 # PLACEHOLDER — update when design locked
 
