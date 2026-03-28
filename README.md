@@ -10,9 +10,9 @@ Transparent wind-resource analysis, spatial wind-field modeling, visualization, 
 
 This repository is under active research and remains a working engineering notebook as well as a codebase.
 
-- active status as of 2026-03-28: the hybrid SIL loop has a literature-anchored lookup-table `Cp(TSR)` model, an earlier startup-to-MPPT handoff, a more conservative overspeed brake trigger, and an honest `0.38 kW` rated-power ceiling; geometry is now narrowed around `c/R=0.11`, `e/d=0.15`, and `R_s/R_d=0.50`, while fabrication details, generator matching, and structural signoff remain open
+- active status as of 2026-03-28: the hybrid SIL loop now uses a DMST-derived lookup-table `Cp(TSR)` model, startup/MPPT hysteresis, a more conservative overspeed brake trigger, and an honest `0.38 kW` rated-power ceiling; geometry is narrowed around `c/R=0.11`, `e/d=0.15`, and `R_s/R_d=0.50`, while fabrication details, generator matching, and structural signoff remain open
 - stable foundation: hourly 2023 CDO wind dataset, derived height columns, spatial analysis utilities, reproducible plots, `viz9` and `viz10` DPCBF diagnostics, exported sphere metrics, Fusion360 load benchmarks, a MATLAB design-foundation workflow, and an adaptive SIL loop with lookup-table Cp(TSR), corrected power accounting, and improved startup-to-MPPT handoff
-- still in-progress: controller fidelity, plant physics, terrain correction quality, validation depth, and the Unity scene integration layer
+- still in-progress: controller fidelity, plant physics, terrain correction quality, validation depth, uncertainty tightening, and the Unity scene integration layer
 - not yet claimed: bankable resource assessment, final micrositing accuracy, or full digital-twin realism
 
 If you are viewing this from GitHub, the intended repo description is:
@@ -139,6 +139,7 @@ Not sufficient for:
 - `build_cdo_vawt_models.m` now generates repo-native Simulink and Simscape baseline models aligned to the current hybrid SIL assumptions
 - `run_cdo_vawt_matlab_pipeline.m` now rebuilds the MATLAB benchmark, regenerates the models, and exports MATLAB SIL results for the 2023 CDO dataset
 - `sil_controller.py`, `sil_plant_model.py`, and `run_sil_simulation.py` now preserve Cp feedback, use a lookup-table Cp(TSR) model, keep ring-resolved inflow structure, lower the startup-to-MPPT handoff threshold, review overspeed braking more conservatively, and separate hourly energy from mean power
+- `dmst_model.py` derives the current DMST-inspired Cp(TSR) lookup, `yield_uncertainty.py` quantifies annual-yield spread, and `validate_against_literature.py` checks the fitted curve against published hybrid Cp traces
 - `UnityVAWT/` adds a 12-script Unity scaffold using `StreamingAssets` runtime CSV loading and URP-oriented scene structure
 - the Unity scaffold is designed to reproduce the engineering meaning of `viz9`, not just its appearance
 
@@ -247,15 +248,18 @@ Primary interactive apps:
 ### Early SIL scaffold
 
 - `sil_controller.py`: adaptive TSR-tracking torque control using plant Cp and aerodynamic-torque feedback, with an earlier startup-to-MPPT handoff and a less trigger-happy brake condition
-- `sil_plant_model.py`: VAWT plant model with lookup-table Cp(TSR), startup torque support, damping, and optional ring-resolved inflow asymmetry
-- `run_sil_simulation.py`: year-scale closed-loop simulation using blended spatial forcing with preserved ring-level inflow structure and explicit hourly energy accounting
+- `sil_plant_model.py`: VAWT plant model with DMST-inspired lookup-table Cp(TSR), startup torque support, damping, and optional ring-resolved inflow asymmetry
+- `run_sil_simulation.py`: year-scale closed-loop simulation using blended spatial forcing with preserved ring-level inflow structure, explicit hourly energy accounting, and mode-transition logging
+- `dmst_model.py`: DMST-style Cp/TSR surrogate builder for the current hybrid geometry lock
+- `yield_uncertainty.py`: Monte Carlo yield spread analysis for wind, Cp, and density uncertainty
+- `validate_against_literature.py`: comparison of the fitted Cp(TSR) curve against published hybrid VAWT data
 
 ## Current SIL Loop
 
 1. Spatial wind forcing is assembled from center-series magnitude, refined spatial ratios and direction deltas, plus turbulence.
 2. The disturbed 25-point field is reconstructed into a ring-resolved rotor inflow instead of collapsing direction immediately to one scalar.
 3. The controller reads simulated wind, rotor speed, previous Cp, previous TSR, and previous aerodynamic torque.
-4. The controller issues adaptive generator torque and brake commands.
+4. The controller issues adaptive generator torque and brake commands with startup/MPPT hysteresis and logged mode transitions.
 5. The plant advances rotor state using a lookup-table Cp(TSR) model and optional azimuthal inflow asymmetry.
 6. Hourly outputs log both mean power and hourly energy, along with upwind/downwind face statistics.
 
