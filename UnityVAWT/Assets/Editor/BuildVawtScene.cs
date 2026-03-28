@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
 public static class BuildVawtScene
@@ -36,7 +37,8 @@ public static class BuildVawtScene
 
         var eventSystemGo = new GameObject("EventSystem");
         eventSystemGo.AddComponent<EventSystem>();
-        eventSystemGo.AddComponent<StandaloneInputModule>();
+        var uiInputModule = eventSystemGo.AddComponent<InputSystemUIInputModule>();
+        uiInputModule.AssignDefaultActions();
 
         var systemGo = new GameObject("VAWTSystem");
         var dataLoader = systemGo.AddComponent<WindDataLoader>();
