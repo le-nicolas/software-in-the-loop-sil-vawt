@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import shutil
+import re
 import subprocess
 import sys
 
@@ -41,11 +42,38 @@ def _read_matlab_delta() -> float | None:
     return float(row.iloc[0]["delta_pct"])
 
 
+def _read_cross_validation_summary() -> dict[str, float] | None:
+    summary_path = REPO_ROOT / "cross_validation_summary.txt"
+    if not summary_path.exists():
+        return None
+
+    text = summary_path.read_text(encoding="utf-8")
+
+    def _match(pattern: str) -> float | None:
+        match = re.search(pattern, text, flags=re.MULTILINE)
+        if not match:
+            return None
+        return float(match.group(1))
+
+    rmse = _match(r"RMSE:\s*([0-9.]+)\s*W")
+    pearson = _match(r"Pearson correlation:\s*([0-9.]+)")
+    mode_alignment = _match(r"Mode alignment:\s*([0-9.]+)%")
+
+    if rmse is None and pearson is None and mode_alignment is None:
+        return None
+    return {
+        "rmse_w": rmse if rmse is not None else float("nan"),
+        "pearson_r": pearson if pearson is not None else float("nan"),
+        "mode_alignment_pct": mode_alignment if mode_alignment is not None else float("nan"),
+    }
+
+
 def main() -> int:
     status = "PASS"
     unity_copied = 0
     python_ok = False
     matlab_ok = False
+    cross_validation_ok = False
     unity_ok = False
 
     print("Step 1: Python SIL and validation")
@@ -73,11 +101,14 @@ def main() -> int:
             if not matlab_ok:
                 status = "FAIL"
                 return 1
+            print("Step 3: Hourly cross-validation")
+            _run_command([sys.executable, "cross_validate_hourly.py"])
+            cross_validation_ok = True
         except Exception as exc:
-            print(f"MATLAB stage failed: {exc}")
+            print(f"MATLAB / cross-validation stage failed: {exc}")
             return 1
 
-    print("Step 3: Unity StreamingAssets sync")
+    print("Step 4: Unity StreamingAssets sync")
     if STREAMING_ASSETS_PATH.exists():
         try:
             unity_copied, _ = sync_to_unity()
@@ -104,12 +135,23 @@ def main() -> int:
     elif not unity_ok:
         status = "PARTIAL" if status == "PASS" else status
 
+    cross_validation = _read_cross_validation_summary()
+
     print("Pipeline complete.")
     print(f"Python SIL:  {annual_yield_kwh:.2f} kWh/yr  [from CDO_sil_run_2023_summary.txt]")
     print(f"MATLAB delta: {matlab_delta_text}            [from matlab_validation_summary.csv]")
+    if cross_validation is not None:
+        print(
+            "Cross-validation: "
+            f"{cross_validation['rmse_w']:.2f} W RMSE, "
+            f"{cross_validation['pearson_r']:.3f} correlation, "
+            f"{cross_validation['mode_alignment_pct']:.2f}% mode match"
+        )
     print(f"Unity sync:  {unity_copied} files copied")
     print(f"Status: {status}")
 
+    if matlab_cmd is not None and not cross_validation_ok:
+        return 1
     return 0 if status != "FAIL" else 1
 
 

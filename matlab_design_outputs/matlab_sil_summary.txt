@@ -1,9 +1,9 @@
 === MATLAB / SIMULINK / SIMSCAPE STATUS ===
 SIL model: C:\Users\User\VAWT\matlab_models\cdo_vawt_sil.slx
 Simscape model: C:\Users\User\VAWT\matlab_models\cdo_vawt_simscape_plant.slx
-Annual yield (MATLAB SIL): 299.797239 kWh/yr
-Daily average (MATLAB SIL): 821.362298 Wh/day
-Mode counts [idle startup adaptive_mppt brake]: 1983 20 6725 32
+Annual yield (MATLAB SIL): 370.547949 kWh/yr
+Daily average (MATLAB SIL): 1015.199859 Wh/day
+Mode counts [idle startup adaptive_mppt brake]: 2629 225 5805 101
 Peak hourly electrical power: 0.380000 kW
-Peak hourly TSR: 4.734128
+Peak hourly TSR: 4.759431
 Simscape final omega: 15.935287 rad/s

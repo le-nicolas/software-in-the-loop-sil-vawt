@@ -134,11 +134,11 @@ Not sufficient for:
 Three tools. One data flow. File-based.
 
 1. Python SIL is the source of truth. It writes `CDO_sil_run_2023_hourly.csv`, `CDO_sil_run_2023_summary.txt`, `yield_uncertainty_results.json`, and `validation_report.txt`.
-2. MATLAB reads those Python outputs, validates the batch model branch, and writes `matlab_validation_summary.csv`, `matlab_cp_tsr_comparison.csv`, and `matlab_sil_summary.mat`.
-3. Unity reads the Python and MATLAB outputs from `UnityVAWT/Assets/StreamingAssets/` for runtime visualization.
-4. `run_pipeline.py` is the master entry point that executes the full file-based flow and syncs the outputs into Unity.
-5. `cross_validate_hourly.py` compares `CDO_sil_run_2023_hourly.csv` against `matlab_design_outputs/matlab_sil_hourly.csv`, then writes `cross_validation_summary.txt` and `cross_validation_hourly.png`.
-6. Latest end-to-end pass: Python SIL `282.563 kWh/year`, MATLAB delta `6.10%`, Unity sync `7` files.
+2. MATLAB reads those Python outputs as the shared forcing layer for the validation branch, then writes `matlab_validation_summary.csv`, `matlab_cp_tsr_comparison.csv`, and `matlab_sil_summary.mat`.
+3. `cross_validate_hourly.py` compares `CDO_sil_run_2023_hourly.csv` against `matlab_design_outputs/matlab_sil_hourly.csv`, then writes `cross_validation_summary.txt` and `cross_validation_hourly.png`.
+4. Unity reads the Python and MATLAB outputs from `UnityVAWT/Assets/StreamingAssets/` for runtime visualization.
+5. `run_pipeline.py` is the master entry point that executes the full file-based flow, runs the hourly cross-check, and syncs the outputs into Unity.
+6. Latest end-to-end pass: Python SIL `282.563 kWh/year`, MATLAB delta `31.14%`, hourly RMSE `40.577 W`, mode alignment `89.75%`, Unity sync `7` files.
 
 ## New In This Repo State
 
@@ -240,10 +240,10 @@ Primary interactive apps:
 
 ### Current MATLAB / Simulink snapshot
 
-- latest MATLAB / Simulink annual yield: `299.797 kWh/year`
-- MATLAB / Simulink daily average: `821 Wh/day`
-- Python-to-MATLAB annual-yield delta: `6.10%`
-- MATLAB SIL mode counts: `idle=1983`, `startup=20`, `adaptive_mppt=6725`, `brake=32`
+- latest MATLAB / Simulink annual yield: `370.548 kWh/year`
+- MATLAB / Simulink daily average: `1015 Wh/day`
+- Python-to-MATLAB annual-yield delta: `31.14%`
+- MATLAB SIL mode counts: `idle=2629`, `startup=225`, `adaptive_mppt=5805`, `brake=101`
 - peak hourly MATLAB SIL electrical power: `0.380 kW`
 - Simscape demo final shaft speed: `15.935 rad/s`
 

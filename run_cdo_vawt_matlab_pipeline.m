@@ -28,6 +28,20 @@ pythonSummaryText = fileread(pythonSummaryPath);
 pythonSummaryAnnualYieldKwh = localReadSummaryScalar(pythonSummaryText, "Final annual kWh");
 pythonUncertainty = jsondecode(fileread(uncertaintyPath));
 pythonValidationReportText = fileread(validationReportPath);
+pythonHourly = sortrows(pythonHourly, "hour_of_year");
+rawHourly = readtable(fullfile(repoRoot, "CDO_wind_2023_hourly.csv"), TextType="string", VariableNamingRule="preserve");
+rawHourly = sortrows(rawHourly, "hour_of_year");
+
+sharedWindSpeed = pythonHourly.effective_wind_speed_ms;
+sharedAirDensity = pythonHourly.effective_air_density_kgm3;
+missingWind = isnan(sharedWindSpeed);
+missingDensity = isnan(sharedAirDensity);
+if any(missingWind)
+    sharedWindSpeed(missingWind) = rawHourly.wind_speed_15m_ms(missingWind);
+end
+if any(missingDensity)
+    sharedAirDensity(missingDensity) = rawHourly.air_density_kgm3(missingDensity);
+end
 
 foundationResults = matlab_design_foundation_benchmark();
 modelInfo = build_cdo_vawt_models();
@@ -35,12 +49,11 @@ load_system(modelInfo.silModelPath);
 load_system(modelInfo.simscapeModelPath);
 
 constants = matlab_vawt_constants();
-raw = readtable(fullfile(repoRoot, "CDO_wind_2023_hourly.csv"), TextType="string", VariableNamingRule="preserve");
-timeHours = (0:height(raw)-1)';
+timeHours = (0:height(pythonHourly)-1)';
 timeSeconds = timeHours .* constants.secondsPerHour;
 
-wind_speed_ts = timeseries(raw.wind_speed_15m_ms, timeSeconds, "Name", "wind_speed_ms");
-air_density_ts = timeseries(raw.air_density_kgm3, timeSeconds, "Name", "air_density_kgm3");
+wind_speed_ts = timeseries(sharedWindSpeed, timeSeconds, "Name", "wind_speed_ms");
+air_density_ts = timeseries(sharedAirDensity, timeSeconds, "Name", "air_density_kgm3");
 
 assignin("base", "wind_speed_ts", wind_speed_ts);
 assignin("base", "air_density_ts", air_density_ts);
@@ -53,18 +66,18 @@ aeroStruct = silSimOut.get("aero_torque_nm");
 powerStruct = silSimOut.get("electrical_power_kw");
 modeStruct = silSimOut.get("mode_id");
 
-omegaSeries = unpackLoggedSignal(omegaStruct, height(raw));
-tsrSeries = unpackLoggedSignal(tsrStruct, height(raw));
-cpSeries = unpackLoggedSignal(cpStruct, height(raw));
-aeroSeries = unpackLoggedSignal(aeroStruct, height(raw));
-powerSeries = unpackLoggedSignal(powerStruct, height(raw));
-modeSeries = unpackLoggedSignal(modeStruct, height(raw));
+omegaSeries = unpackLoggedSignal(omegaStruct, height(pythonHourly));
+tsrSeries = unpackLoggedSignal(tsrStruct, height(pythonHourly));
+cpSeries = unpackLoggedSignal(cpStruct, height(pythonHourly));
+aeroSeries = unpackLoggedSignal(aeroStruct, height(pythonHourly));
+powerSeries = unpackLoggedSignal(powerStruct, height(pythonHourly));
+modeSeries = unpackLoggedSignal(modeStruct, height(pythonHourly));
 
 hourlyTable = table( ...
-    raw.hour_of_year, ...
-    raw.datetime, ...
-    raw.wind_speed_15m_ms, ...
-    raw.air_density_kgm3, ...
+    pythonHourly.hour_of_year, ...
+    pythonHourly.datetime, ...
+    sharedWindSpeed, ...
+    sharedAirDensity, ...
     omegaSeries, ...
     omegaSeries .* 60.0 ./ (2.0 * pi), ...
     tsrSeries, ...

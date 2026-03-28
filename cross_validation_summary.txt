@@ -8,24 +8,24 @@ MATLAB rows: 8760
 Aligned rows: 8760
 
 Power comparison (W):
-  RMSE: 41.830 W
-  MAPE: 98.230 % (computed against MATLAB power; 1991 zero-power MATLAB hours excluded)
-  Pearson correlation: 0.729898
+  RMSE: 40.577 W
+  MAPE: 99.899 % (computed against MATLAB power; 2715 zero-power MATLAB hours excluded)
+  Pearson correlation: 0.834497
 
 Mode alignment:
-  78.29% of hours match after normalizing adaptive_mppt -> mppt and MATLAB mode_id 3 -> mppt
+  89.75% of hours match after normalizing adaptive_mppt -> mppt and MATLAB mode_id 3 -> mppt
 
 Worst 10 hours by absolute power difference:
  hour_of_year         datetime_py abs_diff_w python_power_w matlab_power_w python_wind_speed_ms python_tsr python_mode matlab_wind_speed_ms matlab_tsr matlab_mode
-         8440 2023-12-18 15:00:00    380.000          0.000        380.000               11.527      1.499        mppt               15.290      1.130        mppt
-         8441 2023-12-18 16:00:00    380.000          0.000        380.000                9.800      1.763        mppt               14.971      1.154        mppt
-         8439 2023-12-18 14:00:00    380.000          0.000        380.000               11.954      1.445        mppt               13.941      1.239        mppt
-         8442 2023-12-18 17:00:00    379.824          0.000        379.824                7.393      2.337        mppt               13.080      1.321        mppt
-         8443 2023-12-18 18:00:00    378.551          0.000        378.551                7.210      2.396        mppt               11.210      1.541        mppt
-         8438 2023-12-18 13:00:00    378.216          0.000        378.216               13.179      1.311        mppt               12.315      1.403        mppt
-         8437 2023-12-18 12:00:00    344.415          0.000        344.415               16.502      1.047        mppt               10.328      1.673        mppt
-          224 2023-01-10 07:00:00    327.270        328.030          0.760                8.185      2.111        mppt                5.111      1.690       brake
-         8600 2023-12-25 07:00:00    320.544        371.562         51.018               11.557      1.495        mppt                4.707      2.503        mppt
-         8435 2023-12-18 10:00:00    319.595          0.000        319.595               14.383      1.201        mppt                9.807      1.762        mppt
+         8437 2023-12-18 12:00:00    380.000          0.000        380.000               16.502      1.047        mppt               16.502      1.047        mppt
+         8435 2023-12-18 10:00:00    380.000          0.000        380.000               14.383      1.201        mppt               14.383      1.201        mppt
+         8436 2023-12-18 11:00:00    380.000          0.000        380.000               16.816      1.028        mppt               16.816      1.028        mppt
+         8434 2023-12-18 09:00:00    380.000          0.000        380.000               19.345      0.893        mppt               19.345      0.893        mppt
+         8438 2023-12-18 13:00:00    379.933          0.000        379.933               13.179      1.311        mppt               13.179      1.311        mppt
+         8428 2023-12-18 03:00:00    379.205          0.000        379.205               12.166      1.420        mppt               12.166      1.420        mppt
+         8439 2023-12-18 14:00:00    379.007          0.000        379.007               11.954      1.445        mppt               11.954      1.445        mppt
+         8440 2023-12-18 15:00:00    378.715          0.000        378.715               11.527      1.499        mppt               11.527      1.499        mppt
+         8433 2023-12-18 08:00:00    377.356          0.000        377.356               12.918      1.338        mppt               12.918      1.338        mppt
+         8427 2023-12-18 02:00:00    377.120          0.000        377.120               11.211      1.541        mppt               11.211      1.541        mppt
 
 Scatter plot saved to: C:\Users\User\VAWT\cross_validation_hourly.png
