@@ -165,7 +165,7 @@ namespace CDO.VAWT.Unity
 
         private void ComputeSummary(IReadOnlyList<WindFrameData> frames)
         {
-            float powerSumW = 0f;
+            float energySumKWh = 0f;
             float cpSum = 0f;
             float vRelSum = 0f;
             AlertHours = 0;
@@ -183,19 +183,19 @@ namespace CDO.VAWT.Unity
 
                 cpSum += frame.CpEffective;
                 vRelSum += frame.VRelMagnitude;
-                powerSumW += 0.5f * frame.AirDensity * decomposer.SweptAreaM2 * frame.UMean * frame.UMean * frame.UMean * frame.CpEffective;
+                energySumKWh += frame.ElectricalPowerKw;
 
                 if (capture.Alert)
                 {
                     AlertHours++;
                 }
 
-                bool savoniusCondition = capture.Alert || frame.VRelMagnitude < Mathf.Max(frame.UMean * 0.8f, 0.5f);
+                bool savoniusCondition = capture.Alert || frame.ControlMode == "startup" || frame.Tsr < 1.0f;
                 if (savoniusCondition)
                 {
                     SavoniusActivationHours++;
                 }
-                else if (frame.VRelMagnitude > frame.UMean * 0.8f)
+                else if (frame.ControlMode == "adaptive_mppt" && frame.Tsr >= 1.5f)
                 {
                     DarrieusPrimeHours++;
                 }
@@ -208,7 +208,7 @@ namespace CDO.VAWT.Unity
 
             MeanCp = cpSum / Mathf.Max(1, frames.Count);
             MeanVRel = vRelSum / Mathf.Max(1, frames.Count);
-            AnnualEnergyMWh = powerSumW / 1_000_000f;
+            AnnualEnergyMWh = energySumKWh / 1000f;
 
             float bestScore = float.MinValue;
             int dominantBin = 0;

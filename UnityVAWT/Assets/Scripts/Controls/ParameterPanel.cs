@@ -72,9 +72,9 @@ namespace CDO.VAWT.Unity
 
         private void HandleParameterChanged(float _)
         {
-            float tsrOpt = tsrOptSlider != null ? tsrOptSlider.value : 2.2f;
-            float tsrSpread = tsrSpreadSlider != null ? tsrSpreadSlider.value : 1.6f;
-            float cpGeneric = cpGenericSlider != null ? cpGenericSlider.value : 0.35f;
+            float tsrOpt = tsrOptSlider != null ? tsrOptSlider.value : 2.5f;
+            float tsrSpread = tsrSpreadSlider != null ? tsrSpreadSlider.value : 1.85f;
+            float cpGeneric = cpGenericSlider != null ? cpGenericSlider.value : 0.33f;
             float alpha = alphaSlider != null ? alphaSlider.value : 0.3f;
 
             if (decomposer != null)
@@ -88,8 +88,8 @@ namespace CDO.VAWT.Unity
             }
 
             SetLabel(tsrOptLabel, $"TSR opt: {tsrOpt:F2}");
-            SetLabel(tsrSpreadLabel, $"TSR spread: {tsrSpread:F2}");
-            SetLabel(cpGenericLabel, $"Cp peak: {cpGeneric:F2}");
+            SetLabel(tsrSpreadLabel, $"Lookup width: {tsrSpread:F2}");
+            SetLabel(cpGenericLabel, $"Cp peak scale: {cpGeneric:F2}");
             SetLabel(alphaLabel, $"alpha: {alpha:F2}");
         }
 

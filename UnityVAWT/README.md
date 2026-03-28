@@ -2,6 +2,18 @@
 
 This folder is a Unity-ready scaffold for converting `viz9_dpcbf_sphere_3d.py` into a native Unity experience.
 
+## Current Sync Status
+
+This scaffold now mirrors the current research-side SIL assumptions more closely than the original Unity placeholder.
+
+- lookup-table `Cp(TSR)` replaces the old parabola
+- startup-to-MPPT handoff matches the current low-TSR SIL behavior
+- overspeed braking is less trigger-happy and only acts as a real protection mode
+- rated power is capped at `0.38 kW`, matching the present honest physics ceiling rather than the old unreachable `1.0 kW`
+- HUD output now shows controller mode, electrical power, torque balance, and cap hits
+
+The Unity side is still a research visualization layer, not a validated digital twin. It uses the center-series hourly wind data rather than the full ring-resolved SIL forcing stack.
+
 ## What Is Included
 
 - `Assets/Scripts/Data`
@@ -21,8 +33,8 @@ This folder is a Unity-ready scaffold for converting `viz9_dpcbf_sphere_3d.py` i
 
 ## Recommended Unity Setup
 
-1. Create a new Unity `2022 LTS` project using `URP`.
-2. Copy the `UnityVAWT/Assets` folder into that Unity project.
+1. Open this folder directly as a Unity project. A minimal `Packages/` and `ProjectSettings/` baseline is now included.
+2. The installed editor on this machine is `6000.3.5f1`, which should open the project directly.
 3. Create a scene named `VAWTScene`.
 4. Add a root GameObject named `VAWTSystem`.
 5. Attach these scripts to the scene:
@@ -41,4 +53,4 @@ This folder is a Unity-ready scaffold for converting `viz9_dpcbf_sphere_3d.py` i
 
 - The scripts are written to be inspector-friendly and runtime-generated where possible.
 - No third-party chart package is required; the HUD and polar summary are drawn into `Texture2D` surfaces.
-- The repo is not yet a full Unity project with generated metadata, scenes, or materials. This scaffold is designed to drop into a new URP project cleanly.
+- The repo now includes the minimum project files needed to open directly, but scenes, materials, prefabs, and `.meta` assets are still intentionally lightweight.

@@ -33,7 +33,7 @@ namespace CDO.VAWT.Unity
 
             CurrentCp = frame.CpEffective;
             CurrentTsr = frame.Tsr;
-            CurrentPowerW = 0.5f * frame.AirDensity * decomposer.SweptAreaM2 * frame.UMean * frame.UMean * frame.UMean * frame.CpEffective;
+            CurrentPowerW = frame.ElectricalPowerKw * 1000f;
 
             float targetOmega = frame.OmegaRadS;
             CurrentOmegaRadS = Mathf.Lerp(CurrentOmegaRadS, targetOmega, 1f - Mathf.Exp(-responseSharpness * Time.deltaTime));

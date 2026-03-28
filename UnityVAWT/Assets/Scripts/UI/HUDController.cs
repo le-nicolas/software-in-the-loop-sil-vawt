@@ -116,8 +116,10 @@ namespace CDO.VAWT.Unity
                 statusText.color = SeasonColor(frame.Season);
                 statusText.text =
                     $"Hour {frame.HourOfYear}\n" +
-                    $"Season: {frame.Season}\n" +
-                    $"U = {frame.UMean:F2} m/s | TSR = {frame.Tsr:F2} | Cp = {frame.CpEffective:F3}\n" +
+                    $"Season: {frame.Season} | Mode: {frame.ControlMode}\n" +
+                    $"U = {frame.UMean:F2} m/s | TSR = {frame.Tsr:F2} | Cp = {frame.CpEffective:F3} | RPM = {frame.RotorRpm:F1}\n" +
+                    $"P = {frame.ElectricalPowerKw * 1000f:F0} W | Rated = {frame.RatedPowerKw * 1000f:F0} W | Cap = {(frame.AtRatedCap ? "yes" : "no")}\n" +
+                    $"Aero tq = {frame.AerodynamicTorqueNm:F2} Nm | Gen tq = {frame.GeneratorTorqueNm:F2} Nm | Brake = {frame.BrakeTorqueNm:F2} Nm\n" +
                     $"u' = {frame.UPrime:F2} | w×r = {frame.OmegaCrossR:F2} | |v_rel| = {frame.VRelMagnitude:F2}\n" +
                     $"Inner particles = {(particles != null ? particles.GetInnerCount(frameIndex) : capture.InnerCount)} | " +
                     $"Outer particles = {(particles != null ? particles.GetOuterCount(frameIndex) : capture.OuterCount)}\n" +
@@ -131,8 +133,31 @@ namespace CDO.VAWT.Unity
 
             if (alertText != null)
             {
-                alertText.text = capture.Alert ? "ALERT: Savonius needed" : "Lift regime stable";
-                alertText.color = capture.Alert ? new Color(0.86f, 0.13f, 0.13f, 1f) : new Color(0.12f, 0.55f, 0.32f, 1f);
+                if (frame.ControlMode == "brake")
+                {
+                    alertText.text = "BRAKE: overspeed protection active";
+                    alertText.color = new Color(0.86f, 0.13f, 0.13f, 1f);
+                }
+                else if (frame.ControlMode == "startup")
+                {
+                    alertText.text = "STARTUP: Savonius-assisted handoff zone";
+                    alertText.color = new Color(0.95f, 0.6f, 0.1f, 1f);
+                }
+                else if (frame.AtRatedCap)
+                {
+                    alertText.text = "MPPT: rated cap reached";
+                    alertText.color = new Color(0.12f, 0.38f, 0.95f, 1f);
+                }
+                else if (capture.Alert)
+                {
+                    alertText.text = "ALERT: Savonius needed";
+                    alertText.color = new Color(0.86f, 0.13f, 0.13f, 1f);
+                }
+                else
+                {
+                    alertText.text = "MPPT: lift regime stable";
+                    alertText.color = new Color(0.12f, 0.55f, 0.32f, 1f);
+                }
             }
 
             DrawCaptureGraph(frameIndex);
