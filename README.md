@@ -129,6 +129,15 @@ Not sufficient for:
 - CFD-grade local flow distortion conclusions
 - design signoff without calibration against measurements
 
+## Pipeline
+
+Three tools. One data flow. File-based.
+
+1. Python SIL is the source of truth. It writes `CDO_sil_run_2023_hourly.csv`, `CDO_sil_run_2023_summary.txt`, `yield_uncertainty_results.json`, and `validation_report.txt`.
+2. MATLAB reads those Python outputs, validates the batch model branch, and writes `matlab_validation_summary.csv`, `matlab_cp_tsr_comparison.csv`, and `matlab_sil_summary.mat`.
+3. Unity reads the Python and MATLAB outputs from `UnityVAWT/Assets/StreamingAssets/` for runtime visualization.
+4. `run_pipeline.py` is the master entry point that executes the full file-based flow and syncs the outputs into Unity.
+
 ## New In This Repo State
 
 - `viz9_dpcbf_sphere_3d.py` adds a 3D wind-particle capture sphere with CBF-inspired alert logic
@@ -139,6 +148,7 @@ Not sufficient for:
 - `build_cdo_vawt_models.m` now generates repo-native Simulink and Simscape baseline models aligned to the current hybrid SIL assumptions
 - `run_cdo_vawt_matlab_pipeline.m` now rebuilds the MATLAB benchmark, regenerates the models, and exports MATLAB SIL results for the 2023 CDO dataset
 - `sil_controller.py`, `sil_plant_model.py`, and `run_sil_simulation.py` now preserve Cp feedback, use a lookup-table Cp(TSR) model, keep ring-resolved inflow structure, lower the startup-to-MPPT handoff threshold, review overspeed braking more conservatively, and separate hourly energy from mean power
+- `pipeline_contracts.py`, `run_pipeline.py`, and `sync_to_unity.py` now define the canonical file contracts and connect Python SIL, MATLAB validation, and Unity StreamingAssets with a file-based flow
 - `dmst_model.py` derives the current DMST-inspired Cp(TSR) lookup, `yield_uncertainty.py` quantifies annual-yield spread, and `validate_against_literature.py` checks the fitted curve against published hybrid Cp traces
 - `UnityVAWT/` adds a 12-script Unity scaffold using `StreamingAssets` runtime CSV loading and URP-oriented scene structure
 - the Unity scaffold is designed to reproduce the engineering meaning of `viz9`, not just its appearance

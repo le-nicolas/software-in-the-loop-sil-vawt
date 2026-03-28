@@ -1,0 +1,36 @@
+=== Irawan et al. 2023 ===
+TSR | Published Cp | DMST Cp | Error | % Error | Flag
+0.50 | 0.050 | 0.057 | 0.007 | 15.0% | -
+1.00 | 0.100 | 0.132 | 0.032 | 31.8% | HIGH_DEVIATION
+1.50 | 0.180 | 0.223 | 0.043 | 23.7% | -
+2.00 | 0.250 | 0.266 | 0.016 | 6.6% | -
+2.50 | 0.330 | 0.336 | 0.006 | 1.7% | -
+3.00 | 0.260 | 0.280 | 0.020 | 7.7% | -
+3.50 | 0.100 | 0.162 | 0.062 | 62.4% | HIGH_DEVIATION
+RMSE: 0.0327
+Mean % error: 21.26%
+
+=== Hosseini & Goudarzi 2019 ===
+TSR | Published Cp | DMST Cp | Error | % Error | Flag
+1.00 | 0.120 | 0.132 | 0.012 | 9.8% | -
+1.50 | 0.220 | 0.223 | 0.003 | 1.2% | -
+2.00 | 0.300 | 0.266 | 0.034 | 11.2% | -
+2.50 | 0.400 | 0.336 | 0.064 | 16.1% | -
+3.00 | 0.380 | 0.280 | 0.100 | 26.3% | -
+3.50 | 0.280 | 0.162 | 0.118 | 42.0% | HIGH_DEVIATION
+4.00 | 0.150 | 0.079 | 0.071 | 47.0% | HIGH_DEVIATION
+4.50 | 0.050 | 0.000 | 0.050 | 100.0% | HIGH_DEVIATION
+RMSE: 0.0677
+Mean % error: 31.70%
+
+=== Puspitasari & Sahim 2019 ===
+TSR | Published Cp | DMST Cp | Error | % Error | Flag
+0.50 | 0.040 | 0.057 | 0.017 | 43.7% | HIGH_DEVIATION
+0.70 | 0.070 | 0.087 | 0.017 | 24.7% | -
+1.00 | 0.100 | 0.132 | 0.032 | 31.8% | HIGH_DEVIATION
+1.50 | 0.140 | 0.223 | 0.083 | 59.0% | HIGH_DEVIATION
+2.00 | 0.180 | 0.266 | 0.086 | 48.0% | HIGH_DEVIATION
+RMSE: 0.0564
+Mean % error: 41.44%
+
+DMST model agrees within 31.5% of literature on average. Largest deviation at TSR 4.50 (100.0%). Config differences: the simplified DMST surrogate does not fully capture blade-to-blade wake interaction, exact dynamic stall timing, or the published test-section blockage and support losses.
