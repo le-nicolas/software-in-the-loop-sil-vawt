@@ -66,7 +66,7 @@ CP_GENERIC = 0.33  # source: [Irawan 2023] [10.21926/jept.2301001]
 # More honest than 0.35 for early
 # Savonius-Darrieus feasibility work.
 
-TURBINE_RATED_KW = 1.0
+TURBINE_RATED_KW = 0.38  # physics ceiling ~380W at 10 m/s; 1.0 kW was unreachable
 # PLACEHOLDER — update when design locked
 # 1kW medium VAWT — base case
 # matches feasibility PDF base case

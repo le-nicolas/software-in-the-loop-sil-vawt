@@ -1,7 +1,7 @@
 # Software-in-the-Loop VAWT
 
 ![Status](https://img.shields.io/badge/status-active_research-0f766e)
-![Stage](https://img.shields.io/badge/stage-viz10_%2B_MATLAB_foundation-1d4ed8)
+![Stage](https://img.shields.io/badge/stage-honest_SIL_%2B_geometry_lock-1d4ed8)
 ![Location](https://img.shields.io/badge/site-Cagayan_de_Oro,_PH-475569)
 
 Transparent wind-resource analysis, spatial wind-field modeling, visualization, DPCBF-inspired capture diagnostics, MATLAB design-foundation benchmarking, and adaptive software-in-the-loop work for a vertical-axis wind turbine feasibility study in Cagayan de Oro, Philippines.
@@ -10,6 +10,7 @@ Transparent wind-resource analysis, spatial wind-field modeling, visualization, 
 
 This repository is under active research and remains a working engineering notebook as well as a codebase.
 
+- active status as of 2026-03-28: the hybrid SIL loop has a literature-anchored lookup-table `Cp(TSR)` model, an earlier startup-to-MPPT handoff, a more conservative overspeed brake trigger, and an honest `0.38 kW` rated-power ceiling; geometry is now narrowed around `c/R=0.11`, `e/d=0.15`, and `R_s/R_d=0.50`, while fabrication details, generator matching, and structural signoff remain open
 - stable foundation: hourly 2023 CDO wind dataset, derived height columns, spatial analysis utilities, reproducible plots, `viz9` and `viz10` DPCBF diagnostics, exported sphere metrics, Fusion360 load benchmarks, a MATLAB design-foundation workflow, and an adaptive SIL loop with lookup-table Cp(TSR), corrected power accounting, and improved startup-to-MPPT handoff
 - still in-progress: controller fidelity, plant physics, terrain correction quality, validation depth, and the Unity scene integration layer
 - not yet claimed: bankable resource assessment, final micrositing accuracy, or full digital-twin realism
@@ -241,21 +242,27 @@ Primary interactive apps:
 
 ### Current SIL Snapshot
 
-- latest 2023 closed-loop run: `294.219 kWh/year`
-- average daily yield from the current SIL run: `806 Wh/day`
+- latest 2023 closed-loop run with the honest rated-power cap: `289.312 kWh/year`
+- average daily yield from the current SIL run: `793 Wh/day`
 - hours generating: `5779`
 - mean effective wind speed: `3.724 m/s`
 - mean rotor RPM: `116.64 rpm`
-- peak modeled electrical power: `1.000 kW` at the current rated-power cap
-- working-range hours (`2.5-7.0 m/s`) with zero electrical output: `249`
-- working-range hours with output below `0.001 kW`: `415`
-- working-range control-mode split: `adaptive_mppt=5035`, `startup=232`, `brake=171`
+- peak modeled electrical power: `0.380 kW` at the current rated-power cap
+- working-range hours (`2.5-7.0 m/s`) with zero electrical output: `273`
+- the model still touches the rated cap during a small number of high-wind hours, so annual yield should be treated as an honest research estimate rather than a final hardware claim
 
 Interpretation:
 
 - the lookup-table Cp(TSR) and controller retune materially reduced startup-zone under-harvesting
-- the remaining gap is no longer dominated by a zero-Cp startup model
+- the remaining gap is no longer dominated by a zero-Cp startup model, but is still sensitive to controller details and the present rated-power ceiling
 - the present SIL result should still be treated as a research output, not a bankable yield claim
+
+### Current Design Direction
+
+- hybrid type: low-wind Savonius-Darrieus VAWT for Cagayan de Oro
+- current geometry lock: `CHORD_TO_RADIUS=0.11`, `OVERLAP_RATIO=0.15`, `RADIUS_RATIO=0.50`
+- current material direction: `NACA 4412` Darrieus blades in `GFRP`, inner Savonius buckets in `5052-H32` marine aluminum
+- next engineering gates: blade thickness and spar sizing, shaft and bearing selection, generator match, and fabrication-ready drawings
 
 ## Project Rules
 
