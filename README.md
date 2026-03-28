@@ -137,7 +137,8 @@ Three tools. One data flow. File-based.
 2. MATLAB reads those Python outputs, validates the batch model branch, and writes `matlab_validation_summary.csv`, `matlab_cp_tsr_comparison.csv`, and `matlab_sil_summary.mat`.
 3. Unity reads the Python and MATLAB outputs from `UnityVAWT/Assets/StreamingAssets/` for runtime visualization.
 4. `run_pipeline.py` is the master entry point that executes the full file-based flow and syncs the outputs into Unity.
-5. Latest end-to-end pass: Python SIL `282.563 kWh/year`, MATLAB delta `6.10%`, Unity sync `7` files.
+5. `cross_validate_hourly.py` compares `CDO_sil_run_2023_hourly.csv` against `matlab_design_outputs/matlab_sil_hourly.csv`, then writes `cross_validation_summary.txt` and `cross_validation_hourly.png`.
+6. Latest end-to-end pass: Python SIL `282.563 kWh/year`, MATLAB delta `6.10%`, Unity sync `7` files.
 
 ## New In This Repo State
 

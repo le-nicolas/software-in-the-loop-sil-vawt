@@ -1,0 +1,31 @@
+Cross-validation summary
+========================
+Python file: C:\Users\User\VAWT\CDO_sil_run_2023_hourly.csv
+MATLAB file: C:\Users\User\VAWT\matlab_design_outputs\matlab_sil_hourly.csv
+Alignment key: hour_of_year
+Python rows: 8760
+MATLAB rows: 8760
+Aligned rows: 8760
+
+Power comparison (W):
+  RMSE: 41.830 W
+  MAPE: 98.230 % (computed against MATLAB power; 1991 zero-power MATLAB hours excluded)
+  Pearson correlation: 0.729898
+
+Mode alignment:
+  78.29% of hours match after normalizing adaptive_mppt -> mppt and MATLAB mode_id 3 -> mppt
+
+Worst 10 hours by absolute power difference:
+ hour_of_year         datetime_py abs_diff_w python_power_w matlab_power_w python_wind_speed_ms python_tsr python_mode matlab_wind_speed_ms matlab_tsr matlab_mode
+         8440 2023-12-18 15:00:00    380.000          0.000        380.000               11.527      1.499        mppt               15.290      1.130        mppt
+         8441 2023-12-18 16:00:00    380.000          0.000        380.000                9.800      1.763        mppt               14.971      1.154        mppt
+         8439 2023-12-18 14:00:00    380.000          0.000        380.000               11.954      1.445        mppt               13.941      1.239        mppt
+         8442 2023-12-18 17:00:00    379.824          0.000        379.824                7.393      2.337        mppt               13.080      1.321        mppt
+         8443 2023-12-18 18:00:00    378.551          0.000        378.551                7.210      2.396        mppt               11.210      1.541        mppt
+         8438 2023-12-18 13:00:00    378.216          0.000        378.216               13.179      1.311        mppt               12.315      1.403        mppt
+         8437 2023-12-18 12:00:00    344.415          0.000        344.415               16.502      1.047        mppt               10.328      1.673        mppt
+          224 2023-01-10 07:00:00    327.270        328.030          0.760                8.185      2.111        mppt                5.111      1.690       brake
+         8600 2023-12-25 07:00:00    320.544        371.562         51.018               11.557      1.495        mppt                4.707      2.503        mppt
+         8435 2023-12-18 10:00:00    319.595          0.000        319.595               14.383      1.201        mppt                9.807      1.762        mppt
+
+Scatter plot saved to: C:\Users\User\VAWT\cross_validation_hourly.png
