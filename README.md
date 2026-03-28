@@ -137,6 +137,7 @@ Three tools. One data flow. File-based.
 2. MATLAB reads those Python outputs, validates the batch model branch, and writes `matlab_validation_summary.csv`, `matlab_cp_tsr_comparison.csv`, and `matlab_sil_summary.mat`.
 3. Unity reads the Python and MATLAB outputs from `UnityVAWT/Assets/StreamingAssets/` for runtime visualization.
 4. `run_pipeline.py` is the master entry point that executes the full file-based flow and syncs the outputs into Unity.
+5. Latest end-to-end pass: Python SIL `282.563 kWh/year`, MATLAB delta `6.10%`, Unity sync `7` files.
 
 ## New In This Repo State
 
@@ -240,6 +241,7 @@ Primary interactive apps:
 
 - latest MATLAB / Simulink annual yield: `299.797 kWh/year`
 - MATLAB / Simulink daily average: `821 Wh/day`
+- Python-to-MATLAB annual-yield delta: `6.10%`
 - MATLAB SIL mode counts: `idle=1983`, `startup=20`, `adaptive_mppt=6725`, `brake=32`
 - peak hourly MATLAB SIL electrical power: `0.380 kW`
 - Simscape demo final shaft speed: `15.935 rad/s`
@@ -275,9 +277,9 @@ Primary interactive apps:
 
 ### Current SIL Snapshot
 
-- latest 2023 closed-loop run with the honest rated-power cap: `289.312 kWh/year`
-- average daily yield from the current SIL run: `793 Wh/day`
-- hours generating: `5779`
+- latest 2023 closed-loop run with the honest rated-power cap: `282.563 kWh/year`
+- average daily yield from the current SIL run: `774 Wh/day`
+- hours generating: `5721`
 - mean effective wind speed: `3.724 m/s`
 - mean rotor RPM: `116.64 rpm`
 - peak modeled electrical power: `0.380 kW` at the current rated-power cap
