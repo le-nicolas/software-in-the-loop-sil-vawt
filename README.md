@@ -136,6 +136,8 @@ Not sufficient for:
 - exported sphere and particle CSVs now make the capture logic inspectable outside the HTML viewers
 - `build_fusion360_design_benchmark.py` and `design_benchmarks/` turn the simulation outputs into first-pass CAD load cases
 - `matlab_design_foundation_benchmark.m` converts the benchmark stack into MATLAB-native tables, figures, workspace data, and toolbox-aware follow-on artifacts
+- `build_cdo_vawt_models.m` now generates repo-native Simulink and Simscape baseline models aligned to the current hybrid SIL assumptions
+- `run_cdo_vawt_matlab_pipeline.m` now rebuilds the MATLAB benchmark, regenerates the models, and exports MATLAB SIL results for the 2023 CDO dataset
 - `sil_controller.py`, `sil_plant_model.py`, and `run_sil_simulation.py` now preserve Cp feedback, use a lookup-table Cp(TSR) model, keep ring-resolved inflow structure, lower the startup-to-MPPT handoff threshold, review overspeed braking more conservatively, and separate hourly energy from mean power
 - `UnityVAWT/` adds a 12-script Unity scaffold using `StreamingAssets` runtime CSV loading and URP-oriented scene structure
 - the Unity scaffold is designed to reproduce the engineering meaning of `viz9`, not just its appearance
@@ -191,12 +193,21 @@ Primary interactive apps:
 ### MATLAB foundation workflow
 
 - `matlab_design_foundation_benchmark.m`: MATLAB-native benchmark builder using repo CSV outputs plus optional toolboxes when available
+- `matlab_vawt_constants.m`: MATLAB copy of the current hybrid SIL constants and lookup-table Cp(TSR) baseline
+- `matlab_vawt_sil_hour_step.m`: one-hour MATLAB SIL step that mirrors the present controller and plant assumptions
+- `matlab_vawt_sil_hour_step_vector.m`: Simulink wrapper used by the generated SIL model
+- `build_cdo_vawt_models.m`: programmatic Simulink and Simscape model builder
+- `run_cdo_vawt_matlab_pipeline.m`: full MATLAB pipeline runner for model build plus validation
+- `matlab_models/cdo_vawt_sil.slx`: generated Simulink hourly SIL model
+- `matlab_models/cdo_vawt_simscape_plant.slx`: generated Simscape rotational plant baseline
 - `matlab_design_outputs/matlab_foundation_parameters.csv`: MATLAB-exported foundation numbers for design work
 - `matlab_design_outputs/matlab_foundation_load_cases.csv`: MATLAB-exported load cases
 - `matlab_design_outputs/matlab_seasonal_summary.csv`: seasonal operating summary
 - `matlab_design_outputs/matlab_foundation_summary.txt`: plain-text design summary
 - `matlab_design_outputs/matlab_foundation_dashboard.png`: MATLAB dashboard image
 - `matlab_design_outputs/matlab_foundation_workspace.mat`: saved MATLAB workspace for follow-on analysis
+- `matlab_design_outputs/matlab_sil_hourly.csv`: MATLAB / Simulink hourly SIL export
+- `matlab_design_outputs/matlab_sil_summary.txt`: MATLAB / Simulink / Simscape validation summary
 
 ### Current MATLAB foundation numbers
 
@@ -213,6 +224,14 @@ Primary interactive apps:
 - aero torque `P95`: `9.314 N*m`
 - capture fraction `P50`: `1.000`
 - dominant peak sector: `210 deg`
+
+### Current MATLAB / Simulink snapshot
+
+- latest MATLAB / Simulink annual yield: `299.797 kWh/year`
+- MATLAB / Simulink daily average: `821 Wh/day`
+- MATLAB SIL mode counts: `idle=1983`, `startup=20`, `adaptive_mppt=6725`, `brake=32`
+- peak hourly MATLAB SIL electrical power: `0.380 kW`
+- Simscape demo final shaft speed: `15.935 rad/s`
 
 ### Unity conversion scaffold
 

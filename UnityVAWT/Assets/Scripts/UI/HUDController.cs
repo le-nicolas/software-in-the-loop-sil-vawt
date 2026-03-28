@@ -6,6 +6,7 @@ namespace CDO.VAWT.Unity
     public class HUDController : MonoBehaviour
     {
         [Header("Dependencies")]
+        [SerializeField] private WindDataLoader dataLoader;
         [SerializeField] private WindDecomposer decomposer;
         [SerializeField] private CBFMonitor cbfMonitor;
         [SerializeField] private VAWTParticles particles;
@@ -27,6 +28,7 @@ namespace CDO.VAWT.Unity
 
         private void Reset()
         {
+            dataLoader = FindFirstObjectByType<WindDataLoader>();
             decomposer = FindFirstObjectByType<WindDecomposer>();
             cbfMonitor = FindFirstObjectByType<CBFMonitor>();
             particles = FindFirstObjectByType<VAWTParticles>();
@@ -36,6 +38,12 @@ namespace CDO.VAWT.Unity
 
         private void OnEnable()
         {
+            if (dataLoader != null)
+            {
+                dataLoader.DataLoaded += HandleLoaderEvent;
+                dataLoader.DataLoadFailed += HandleLoaderFailure;
+            }
+
             if (decomposer != null)
             {
                 decomposer.DecompositionUpdated += HandleDataChanged;
@@ -56,6 +64,12 @@ namespace CDO.VAWT.Unity
 
         private void OnDisable()
         {
+            if (dataLoader != null)
+            {
+                dataLoader.DataLoaded -= HandleLoaderEvent;
+                dataLoader.DataLoadFailed -= HandleLoaderFailure;
+            }
+
             if (decomposer != null)
             {
                 decomposer.DecompositionUpdated -= HandleDataChanged;
@@ -100,10 +114,21 @@ namespace CDO.VAWT.Unity
             lastFrameIndex = frameIndex;
         }
 
+        private void HandleLoaderEvent(System.Collections.Generic.IReadOnlyList<WindSample> _)
+        {
+            HandleDataChanged();
+        }
+
+        private void HandleLoaderFailure(string _)
+        {
+            HandleDataChanged();
+        }
+
         private void Redraw(int frameIndex)
         {
             if (decomposer == null || cbfMonitor == null || decomposer.FrameCount == 0 || cbfMonitor.CaptureFrames.Count == 0)
             {
+                DrawPreloadState();
                 return;
             }
 
@@ -162,6 +187,69 @@ namespace CDO.VAWT.Unity
 
             DrawCaptureGraph(frameIndex);
             DrawDecompositionGraph(frameIndex);
+        }
+
+        private void DrawPreloadState()
+        {
+            if (statusText != null)
+            {
+                statusText.text = BuildPreloadStatus();
+                statusText.color = new Color(0.08f, 0.11f, 0.15f, 1f);
+            }
+
+            if (alertText != null)
+            {
+                if (dataLoader != null && !string.IsNullOrWhiteSpace(dataLoader.LastError))
+                {
+                    alertText.text = "LOAD ERROR: check Console and StreamingAssets CSV";
+                    alertText.color = new Color(0.86f, 0.13f, 0.13f, 1f);
+                }
+                else if (dataLoader != null && dataLoader.IsLoading)
+                {
+                    alertText.text = "Loading CDO wind data...";
+                    alertText.color = new Color(0.12f, 0.38f, 0.95f, 1f);
+                }
+                else
+                {
+                    alertText.text = "Preparing simulation frames...";
+                    alertText.color = new Color(0.95f, 0.6f, 0.1f, 1f);
+                }
+            }
+
+            if (alertBadge != null)
+            {
+                alertBadge.color = dataLoader != null && !string.IsNullOrWhiteSpace(dataLoader.LastError)
+                    ? new Color(0.86f, 0.13f, 0.13f, 1f)
+                    : new Color(0.95f, 0.6f, 0.1f, 1f);
+            }
+        }
+
+        private string BuildPreloadStatus()
+        {
+            if (dataLoader == null)
+            {
+                return "Wind loader reference is missing.\nThe scene cannot build frames until the loader is assigned.";
+            }
+
+            if (!string.IsNullOrWhiteSpace(dataLoader.LastError))
+            {
+                return
+                    "Wind data failed to load.\n" +
+                    $"Error: {dataLoader.LastError}\n" +
+                    "Expected file: Assets/StreamingAssets/CDO_wind_2023_hourly.csv";
+            }
+
+            if (dataLoader.IsLoading)
+            {
+                return "Loading CDO wind data from StreamingAssets...\nThe simulation will start automatically when the hourly frames are ready.";
+            }
+
+            if (dataLoader.IsLoaded && decomposer != null && decomposer.FrameCount == 0)
+            {
+                return $"Loaded {dataLoader.Samples.Count} wind rows.\nBuilding aerodynamic frames now...";
+            }
+
+            return "Entering Play Mode...\nWaiting for wind data and simulation frames.";
         }
 
         private void DrawCaptureGraph(int frameIndex)

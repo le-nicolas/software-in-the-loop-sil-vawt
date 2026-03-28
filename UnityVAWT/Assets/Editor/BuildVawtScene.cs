@@ -151,6 +151,7 @@ public static class BuildVawtScene
         SetObjectReference(parameterPanel, "alphaLabel", alphaLabel);
         SetObjectReference(parameterPanel, "playbackSpeedLabel", playbackLabel);
         SetObjectReference(parameterPanel, "timelineSlider", timelineSlider);
+        SetObjectReference(hudController, "dataLoader", dataLoader);
         SetObjectReference(hudController, "decomposer", decomposer);
         SetObjectReference(hudController, "cbfMonitor", cbfMonitor);
         SetObjectReference(hudController, "particles", particles);

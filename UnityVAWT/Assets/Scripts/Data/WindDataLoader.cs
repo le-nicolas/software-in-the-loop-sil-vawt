@@ -24,62 +24,99 @@ namespace CDO.VAWT.Unity
         [SerializeField] private bool autoLoadOnStart = true;
 
         private readonly List<WindSample> samples = new List<WindSample>(8760);
+        private Coroutine loadRoutine;
 
         public event Action<IReadOnlyList<WindSample>> DataLoaded;
         public event Action<string> DataLoadFailed;
 
         public IReadOnlyList<WindSample> Samples => samples;
         public bool IsLoaded { get; private set; }
+        public bool IsLoading { get; private set; }
+        public string LastError { get; private set; } = string.Empty;
 
         private void Start()
         {
             if (autoLoadOnStart)
             {
-                StartCoroutine(LoadCsvRoutine());
+                BeginLoad();
             }
         }
 
         public void Reload()
         {
-            StartCoroutine(LoadCsvRoutine());
+            BeginLoad();
+        }
+
+        private void BeginLoad()
+        {
+            if (loadRoutine != null)
+            {
+                StopCoroutine(loadRoutine);
+            }
+
+            loadRoutine = StartCoroutine(LoadCsvRoutine());
         }
 
         private IEnumerator LoadCsvRoutine()
         {
+            IsLoading = true;
             IsLoaded = false;
+            LastError = string.Empty;
             samples.Clear();
 
-            string uri = BuildStreamingAssetsUri(csvFileName);
-            using (UnityWebRequest request = UnityWebRequest.Get(uri))
+            string fullPath = BuildStreamingAssetsPath(csvFileName);
+            string csvText = null;
+
+            if (File.Exists(fullPath))
             {
-                yield return request.SendWebRequest();
+                csvText = File.ReadAllText(fullPath);
+            }
+            else
+            {
+                string uri = BuildStreamingAssetsUri(fullPath);
+                using (UnityWebRequest request = UnityWebRequest.Get(uri))
+                {
+                    yield return request.SendWebRequest();
 
-                if (request.result != UnityWebRequest.Result.Success)
-                {
-                    string error = $"Failed to load wind CSV from {uri}: {request.error}";
-                    Debug.LogError(error);
-                    DataLoadFailed?.Invoke(error);
-                    yield break;
-                }
+                    if (request.result != UnityWebRequest.Result.Success)
+                    {
+                        string error = $"Failed to load wind CSV from {fullPath}: {request.error}";
+                        LastError = error;
+                        IsLoading = false;
+                        Debug.LogError(error);
+                        DataLoadFailed?.Invoke(error);
+                        yield break;
+                    }
 
-                try
-                {
-                    ParseCsv(request.downloadHandler.text);
-                    IsLoaded = true;
-                    DataLoaded?.Invoke(samples);
-                    Debug.Log($"WindDataLoader loaded {samples.Count} samples.");
+                    csvText = request.downloadHandler.text;
                 }
-                catch (Exception ex)
-                {
-                    Debug.LogError(ex);
-                    DataLoadFailed?.Invoke(ex.Message);
-                }
+            }
+
+            try
+            {
+                ParseCsv(csvText);
+                IsLoaded = true;
+                IsLoading = false;
+                DataLoaded?.Invoke(samples);
+                Debug.Log($"WindDataLoader loaded {samples.Count} samples from {fullPath}.");
+            }
+            catch (Exception ex)
+            {
+                LastError = ex.Message;
+                IsLoading = false;
+                Debug.LogError(ex);
+                DataLoadFailed?.Invoke(ex.Message);
             }
         }
 
-        private static string BuildStreamingAssetsUri(string fileName)
+        private static string BuildStreamingAssetsPath(string fileName)
         {
-            string combinedPath = Path.Combine(Application.streamingAssetsPath, fileName);
+            return Path.Combine(Application.streamingAssetsPath, fileName);
+        }
+
+        private static string BuildStreamingAssetsUri(string fullPath)
+        {
+            string combinedPath = fullPath;
             if (combinedPath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
                 return combinedPath;

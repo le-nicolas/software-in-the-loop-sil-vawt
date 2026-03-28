@@ -11,3 +11,6 @@ CDO_grid_wind_2023_wide_refined.csv
 CDO_wind_2023_gradients.csv
 CDO_sil_run_2023_hourly.csv
 CDO_sil_run_2023_summary.txt
+slprj/
+*.slxc
+*.autosave

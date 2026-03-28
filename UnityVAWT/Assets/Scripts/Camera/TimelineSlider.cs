@@ -14,8 +14,10 @@ namespace CDO.VAWT.Unity
         [SerializeField] private Text speedLabel;
         [SerializeField] private float playbackFramesPerSecond = 10f;
         [SerializeField] private float playbackSpeedMultiplier = 1f;
+        [SerializeField] private bool autoPlayOnDataReady = true;
 
         private float playbackAccumulator;
+        private bool autoStarted;
 
         public event Action<int> FrameChanged;
 
@@ -100,11 +102,15 @@ namespace CDO.VAWT.Unity
         public void Play()
         {
             IsPlaying = true;
+            playbackAccumulator = 0f;
+            UpdateLabels();
         }
 
         public void Pause()
         {
             IsPlaying = false;
+            playbackAccumulator = 0f;
+            UpdateLabels();
         }
 
         public void SetPlaybackSpeed(float multiplier)
@@ -147,7 +153,15 @@ namespace CDO.VAWT.Unity
                 timeline.SetValueWithoutNotify(CurrentFrameIndex);
             }
 
+            if (decomposer != null && decomposer.AnimatedFrameCount > 1 && autoPlayOnDataReady && !autoStarted)
+            {
+                autoStarted = true;
+                CurrentFrameIndex = 0;
+                Play();
+            }
+
             UpdateLabels();
+            FrameChanged?.Invoke(CurrentFrameIndex);
         }
 
         private void HandleSliderChanged(float value)
@@ -159,13 +173,21 @@ namespace CDO.VAWT.Unity
         {
             if (currentHourLabel != null)
             {
-                int hour = decomposer != null && decomposer.FrameCount > 0 ? decomposer.GetFrame(CurrentFrameIndex).HourOfYear : 0;
-                currentHourLabel.text = $"Hour: {hour}";
+                if (decomposer == null || decomposer.FrameCount == 0)
+                {
+                    currentHourLabel.text = "Hour: waiting for wind data";
+                }
+                else
+                {
+                    int hour = decomposer.GetFrame(CurrentFrameIndex).HourOfYear;
+                    currentHourLabel.text = $"Hour: {hour}  Frame: {CurrentFrameIndex + 1}/{decomposer.AnimatedFrameCount}";
+                }
             }
 
             if (speedLabel != null)
             {
-                speedLabel.text = $"Speed: {playbackSpeedMultiplier:F1}x";
+                string state = IsPlaying ? "Running" : "Paused";
+                speedLabel.text = $"{state}  Speed: {playbackSpeedMultiplier:F1}x";
             }
         }
     }
