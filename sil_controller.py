@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
 import numpy as np
@@ -106,10 +107,19 @@ class SimpleVAWTController:
             self.reset()
             return ControllerCommand(generator_torque_nm=0.0, brake_torque_nm=BRAKE_TORQUE_NM, mode="brake")
 
+        if not math.isfinite(wind_speed) or not math.isfinite(tsr_measured):
+            self._tsr_error_integral = 0.0
+            return ControllerCommand(generator_torque_nm=0.0, brake_torque_nm=0.0, mode=self._current_mode)
+
         target_omega = TSR_OPT * wind_speed / max(ROTOR_RADIUS_M, 1e-6)
-        target_tsr = target_omega * ROTOR_RADIUS_M / max(wind_speed, 0.1)
-        tsr_error = tsr_measured - target_tsr
-        self._tsr_error_integral = float(np.clip(self._tsr_error_integral + tsr_error * 60.0, -200.0, 200.0))
+        tsr_error = tsr_measured - TSR_OPT
+        if not math.isfinite(self._tsr_error_integral):
+            self._tsr_error_integral = 0.0
+        if math.isfinite(tsr_error):
+            self._tsr_error_integral += tsr_error * 60.0
+        if not math.isfinite(self._tsr_error_integral):
+            self._tsr_error_integral = 0.0
+        self._tsr_error_integral = float(np.clip(self._tsr_error_integral, -200.0, 200.0))
 
         # Use the actual plant Cp feedback and measured aerodynamic torque, not a fixed
         # pre-tuned quadratic law. The controller unloads when TSR is below target and
